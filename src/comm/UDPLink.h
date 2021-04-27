@@ -104,6 +104,8 @@ public:
     bool isConnected(void) const override;
     void disconnect (void) override;
 
+    QList<UDPCLient*>     getSessionTargets () { return _sessionTargets; };
+
     // QThread overrides
     void run(void) override;
 

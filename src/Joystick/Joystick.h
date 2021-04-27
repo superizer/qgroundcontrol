@@ -249,6 +249,9 @@ private:
     int _mapFunctionMode(int mode, int function);
     void _remapAxes(int currentMode, int newMode, int (&newMapping)[maxFunction]);
 
+    int ButtonCommandGenerator();
+    int StickRemap();
+
     // Override from QThread
     virtual void run();
 
@@ -290,13 +293,19 @@ protected:
     int     _totalButtonCount;
 
     static int          _transmitterMode;
+
+    int                 _txmode;
+    float               _rgAxisCalValue[maxFunction] = {};
     int                 _rgFunctionAxis[maxFunction] = {};
+
     QElapsedTimer       _axisTime;
 
     QmlObjectListModel              _assignableButtonActions;
     QList<AssignedButtonAction*>    _buttonActionArray;
     QStringList                     _availableActionTitles;
     MultiVehicleManager*            _multiVehicleManager = nullptr;
+
+    JoystickManager*    _joystickManager;
 
     static const float  _minAxisFrequencyHz;
     static const float  _maxAxisFrequencyHz;
@@ -315,6 +324,7 @@ private:
     static const char* _accumulatorSettingsKey;
     static const char* _deadbandSettingsKey;
     static const char* _circleCorrectionSettingsKey;
+    static const char* _negativeThrustSettingsKey;
     static const char* _axisFrequencySettingsKey;
     static const char* _buttonFrequencySettingsKey;
     static const char* _txModeSettingsKey;

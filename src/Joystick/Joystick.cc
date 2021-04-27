@@ -16,6 +16,46 @@
 #include "VideoManager.h"
 #include "QGCCameraManager.h"
 #include "QGCCameraControl.h"
+#include "LinkConfiguration.h"
+#include "UDPLink.h"
+
+#ifdef Q_OS_WIN
+    #include <WinSock.h>
+    #pragma comment(lib, "Ws2_32.lib")
+#else
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sstream>
+
+#ifdef __android__
+namespace patch
+{
+    template < typename T > std::string to_string( const T& n )
+    {
+        std::ostringstream stm ;
+        stm << n ;
+        return stm.str() ;
+    }
+}
+#endif
+
+#endif
+
+#include <iostream>
+
+#define UDP_IP          "127.0.0.1"
+#define UDP_PORT        7778
+#define MAXLINE         1024
+#define MOTOR_MAXSPD    0
+
+#define RADIO_PREAMBLE  "NuNar__"
 
 #include <QSettings>
 
@@ -31,6 +71,7 @@ const char* Joystick::_exponentialSettingsKey =         "Exponential";
 const char* Joystick::_accumulatorSettingsKey =         "Accumulator";
 const char* Joystick::_deadbandSettingsKey =            "Deadband";
 const char* Joystick::_circleCorrectionSettingsKey =    "Circle_Correction";
+const char* Joystick::_negativeThrustSettingsKey =      "NegativeThrust";
 const char* Joystick::_axisFrequencySettingsKey =       "AxisFrequency";
 const char* Joystick::_buttonFrequencySettingsKey =     "ButtonFrequency";
 const char* Joystick::_txModeSettingsKey =              nullptr;
@@ -104,6 +145,7 @@ Joystick::Joystick(const QString& name, int axisCount, int buttonCount, int hatC
     , _hatButtonCount(4 * hatCount)
     , _totalButtonCount(_buttonCount+_hatButtonCount)
     , _multiVehicleManager(multiVehicleManager)
+    , _joystickManager(qgcApp()->toolbox()->joystickManager())
 {
     _rgAxisValues   = new int[static_cast<size_t>(_axisCount)];
     _rgCalibration  = new Calibration_t[static_cast<size_t>(_axisCount)];
@@ -175,6 +217,7 @@ void Joystick::_setDefaultCalibration(void) {
     _axisFrequencyHz    = _defaultAxisFrequencyHz;
     _buttonFrequencyHz  = _defaultButtonFrequencyHz;
     _throttleMode       = ThrottleModeDownZero;
+    _negativeThrust     = false;
     _calibrated         = true;
     _circleCorrection   = false;
 
@@ -238,9 +281,12 @@ void Joystick::_loadSettings()
     _axisFrequencyHz    = settings.value(_axisFrequencySettingsKey,     _defaultAxisFrequencyHz).toFloat();
     _buttonFrequencyHz  = settings.value(_buttonFrequencySettingsKey,   _defaultButtonFrequencyHz).toFloat();
     _circleCorrection   = settings.value(_circleCorrectionSettingsKey,  false).toBool();
+    _negativeThrust     = settings.value(_negativeThrustSettingsKey, false).toBool();
 
     _throttleMode   = static_cast<ThrottleMode_t>(settings.value(_throttleModeSettingsKey, ThrottleModeDownZero).toInt(&convertOk));
     badSettings |= !convertOk;
+
+    setNegativeThrust(_throttleMode == ThrottleModeCenterZero);
 
     qCDebug(JoystickLog) << "_loadSettings calibrated:txmode:throttlemode:exponential:deadband:badsettings" << _calibrated << _transmitterMode << _throttleMode << _exponential << _deadband << badSettings;
 
@@ -342,6 +388,7 @@ void Joystick::_saveSettings()
     settings.setValue(_buttonFrequencySettingsKey,  _buttonFrequencyHz);
     settings.setValue(_throttleModeSettingsKey,     _throttleMode);
     settings.setValue(_circleCorrectionSettingsKey, _circleCorrection);
+    settings.setValue(_negativeThrustSettingsKey,   _negativeThrust);
 
     qCDebug(JoystickLog) << "_saveSettings calibrated:throttlemode:deadband:txmode" << _calibrated << _throttleMode << _deadband << _circleCorrection << _transmitterMode;
 
@@ -465,6 +512,55 @@ float Joystick::_adjustRange(int value, Calibration_t calibration, bool withDead
     return std::max(-1.0f, std::min(correctedValue, 1.0f));
 }
 
+int Joystick::StickRemap(){
+    int remaped = 0;
+    int maxTiming = 500;
+    int pwmTiming = maxTiming;
+    int stickThreshold = 50;
+    int newRange = maxTiming;
+    int oldRange = (maxTiming - stickThreshold);
+    float joyFactor = 1.26;
+    float throttle = _rgAxisCalValue[throttleFunction]*pwmTiming*joyFactor;
+    if( throttle > stickThreshold){
+        remaped = int((throttle * newRange) / oldRange) - stickThreshold;
+    } else if(throttle < (-1*stickThreshold)){
+        remaped = int((throttle * oldRange) / oldRange) + stickThreshold;
+    }
+    return remaped;
+}
+
+
+int Joystick::ButtonCommandGenerator(){
+    int buttonData = 0x00;
+    // top camera
+    if (_rgButtonValues[3]){
+        //Turn top camera on
+        buttonData |= 0x20;
+    } else {
+        buttonData &= ~0x10;
+    }
+    // rear camera
+    if (_rgButtonValues[1]){
+        buttonData |= 0x01;
+    } else {
+        buttonData &= ~0x01;
+    }
+    // led command
+    if (_rgButtonValues[10]){
+        buttonData |= 0x04;
+    } else {
+        buttonData &= ~0x04;
+    }
+    // flash command
+    if (_rgButtonValues[9]){
+        buttonData |= 0x80;
+    } else {
+        buttonData &= ~0x80;
+    }
+
+    return buttonData;
+}
+
 
 void Joystick::run()
 {
@@ -481,6 +577,115 @@ void Joystick::run()
         _update();
         _handleButtons();
         _handleAxis();
+        if(_activeVehicle){
+           if(_activeVehicle->vehicleLinkManager()->primaryLink().lock()->linkConfiguration()->type() == LinkConfiguration::TypeUdp){
+            // if(_activeVehicle->priorityLink()->getLinkConfiguration()->type() == LinkConfiguration::TypeUdp){
+
+                std::string message = RADIO_PREAMBLE;
+                struct sockaddr_in     servaddr;
+
+                UDPLink* udplink = dynamic_cast<UDPLink*>(_activeVehicle->vehicleLinkManager()->primaryLink().lock().get());
+               //  UDPLink* udplink = qobject_cast<UDPLink*>(_activeVehicle->priorityLink());
+
+                if (udplink->isConnected()) {
+                  // if (udplink){
+                  //   for(UDPCLient* target: udplink->lock()->getSessionTargets()){
+                     for(UDPCLient* target: udplink->getSessionTargets()){
+
+#ifdef Q_OS_WIN
+                        WSADATA WSAData;
+                        SOCKET  sockfd = INVALID_SOCKET;
+
+                        if (WSAStartup(MAKEWORD(2, 2), &WSAData) == NO_ERROR){
+
+                            if ((sockfd=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) != INVALID_SOCKET) {
+                                QString UDPIPQStr = target->address.toString();
+                                QByteArray UDPIPQBArr = UDPIPQStr.toLocal8Bit();
+                                char* VehicleIP = UDPIPQBArr.data();
+                                unsigned short VehiclePort = UDP_PORT;
+
+                                memset(&servaddr, 0, sizeof(servaddr));
+
+                                servaddr.sin_family = AF_INET;
+                                servaddr.sin_port = htons(VehiclePort);
+                                servaddr.sin_addr.s_addr = inet_addr(VehicleIP);
+
+                                // Generate message
+                                // LED Level
+                                int ledLevel = StickRemap();
+                                message.append(",");
+                                message.append(std::to_string(ledLevel));
+                                // Unknown Value
+                                message.append(",0");
+                                // Button Data
+                                int buttonData = ButtonCommandGenerator();
+                                message.append(",");
+                                message.append(std::to_string(buttonData));
+                                // MOTOR_MAXSPD
+                                message.append(",");
+                                message.append(std::to_string(MOTOR_MAXSPD));
+
+                                sendto(sockfd, (const char *)message.c_str(), strlen(message.c_str()) , 0, (const struct sockaddr *) &servaddr, sizeof(servaddr));
+
+                                closesocket(sockfd);
+                            }
+                            WSACleanup();
+                        }
+#else
+                        int  sockfd;
+                        // Creating socket file descriptor
+                        if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) > 0) {
+                            QString UDPIPQStr = target->address.toString();
+                            QByteArray UDPIPQBArr = UDPIPQStr.toLocal8Bit();
+                            char* VehicleIP = UDPIPQBArr.data();
+                            int VehiclePort = UDP_PORT;
+
+                            memset(&servaddr, 0, sizeof(servaddr));
+
+                            // Filling server information
+                            servaddr.sin_family = AF_INET;
+                            servaddr.sin_port = htons(VehiclePort);
+                            servaddr.sin_addr.s_addr = inet_addr(VehicleIP);
+
+                            // Generate message
+                            // LED Level
+                            int ledLevel = StickRemap();
+                            int buttonData = ButtonCommandGenerator();
+#ifdef __android__
+                            message.append(",");
+                            message.append(patch::to_string(ledLevel));
+                            // Unknown Value
+                            message.append(",0");
+                            // Button Data
+                            message.append(",");
+                            message.append(patch::to_string(buttonData));
+                            // MOTOR_MAXSPD
+                            message.append(",");
+                            message.append(patch::to_string(MOTOR_MAXSPD));
+#else
+                            message.append(",");
+                            message.append(std::to_string(ledLevel));
+                            // Unknown Value
+                            message.append(",0");
+                            // Button Data
+                            message.append(",");
+                            message.append(std::to_string(buttonData));
+                            // MOTOR_MAXSPD
+                            message.append(",");
+                            message.append(std::to_string(MOTOR_MAXSPD));
+#endif
+                            //qDebug() << "generate message" << message.c_str();
+
+                            sendto(sockfd, (const char *)message.c_str(), strlen(message.c_str()),
+                                MSG_DONTWAIT, (const struct sockaddr *) &servaddr,
+                                    sizeof(servaddr));
+                            close(sockfd);
+                        }
+#endif
+                    }
+                }
+            }
+        }
         QGC::SLEEP::msleep(qMin(static_cast<int>(1000.0f / _maxAxisFrequencyHz), static_cast<int>(1000.0f / _maxButtonFrequencyHz)) / 2);
     }
     _close();
@@ -600,14 +805,22 @@ void Joystick::_handleAxis()
             int     axis = _rgFunctionAxis[rollFunction];
             float   roll = _adjustRange(_rgAxisValues[axis],    _rgCalibration[axis], _deadband);
 
+            _rgAxisCalValue[rollFunction]     = roll;
+
                     axis = _rgFunctionAxis[pitchFunction];
             float   pitch = _adjustRange(_rgAxisValues[axis],   _rgCalibration[axis], _deadband);
+
+            _rgAxisCalValue[pitchFunction]    = pitch;
 
                     axis = _rgFunctionAxis[yawFunction];
             float   yaw = _adjustRange(_rgAxisValues[axis],     _rgCalibration[axis],_deadband);
 
+            _rgAxisCalValue[yawFunction]      = yaw;
+
                     axis = _rgFunctionAxis[throttleFunction];
             float   throttle = _adjustRange(_rgAxisValues[axis],_rgCalibration[axis], _throttleMode==ThrottleModeDownZero?false:_deadband);
+
+            _rgAxisCalValue[throttleFunction] = throttle;
 
             float   gimbalPitch = 0.0f;
             float   gimbalYaw   = 0.0f;
@@ -615,11 +828,13 @@ void Joystick::_handleAxis()
             if(_axisCount > 4) {
                 axis = _rgFunctionAxis[gimbalPitchFunction];
                 gimbalPitch = _adjustRange(_rgAxisValues[axis], _rgCalibration[axis],_deadband);
+                _rgAxisCalValue[pitchFunction] = pitch;
             }
 
             if(_axisCount > 5) {
                 axis = _rgFunctionAxis[gimbalYawFunction];
                 gimbalYaw = _adjustRange(_rgAxisValues[axis],   _rgCalibration[axis],_deadband);
+                _rgAxisCalValue[yawFunction] = yaw;
             }
 
             if (_accumulator) {
@@ -627,6 +842,7 @@ void Joystick::_handleAxis()
                 throttle_accu += throttle * (40 / 1000.f); //for throttle to change from min to max it will take 1000ms (40ms is a loop time)
                 throttle_accu = std::max(static_cast<float>(-1.f), std::min(throttle_accu, static_cast<float>(1.f)));
                 throttle = throttle_accu;
+                _rgAxisCalValue[throttleFunction] = throttle;
             }
 
             if (_circleCorrection) {
@@ -640,6 +856,11 @@ void Joystick::_handleAxis()
                 pitch =     std::max(-1.0f, std::min(tanf(asinf(pitch_limited)),    1.0f));
                 yaw =       std::max(-1.0f, std::min(tanf(asinf(yaw_limited)),      1.0f));
                 throttle =  std::max(-1.0f, std::min(tanf(asinf(throttle_limited)), 1.0f));
+
+                _rgAxisCalValue[rollFunction]     = roll;
+                _rgAxisCalValue[pitchFunction]    = pitch;
+                _rgAxisCalValue[yawFunction]      = yaw;
+                _rgAxisCalValue[throttleFunction] = throttle;
             }
 
             if ( _exponential < -0.01f) {
@@ -649,15 +870,21 @@ void Joystick::_handleAxis()
                 roll =  -_exponential*powf(roll, 3) + (1+_exponential)*roll;
                 pitch = -_exponential*powf(pitch,3) + (1+_exponential)*pitch;
                 yaw =   -_exponential*powf(yaw,  3) + (1+_exponential)*yaw;
+
+                _rgAxisCalValue[rollFunction]  = roll;
+                _rgAxisCalValue[pitchFunction] = pitch;
+                _rgAxisCalValue[yawFunction]   = yaw;
             }
 
             // Adjust throttle to 0:1 range
             if (_throttleMode == ThrottleModeCenterZero && _activeVehicle->supportsThrottleModeCenterZero()) {
                 if (!_activeVehicle->supportsNegativeThrust() || !_negativeThrust) {
                     throttle = std::max(0.0f, throttle);
+                    _rgAxisCalValue[throttleFunction] = throttle;
                 }
             } else {
                 throttle = (throttle + 1.0f) / 2.0f;
+                _rgAxisCalValue[throttleFunction] = throttle;
             }
             qCDebug(JoystickValuesLog) << "name:roll:pitch:yaw:throttle:gimbalPitch:gimbalYaw" << name() << roll << -pitch << yaw << throttle << gimbalPitch << gimbalYaw;
             // NOTE: The buttonPressedBits going to MANUAL_CONTROL are currently used by ArduSub (and it only handles 16 bits)
