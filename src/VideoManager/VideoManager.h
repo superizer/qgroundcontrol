@@ -102,6 +102,8 @@ public:
 
     // Override from QGCTool
     virtual void        setToolbox          (QGCToolbox *toolbox);
+    void                setToolboxMod       (QGCToolbox *toolbox, int settingNumber);
+
 
     Q_INVOKABLE void startVideo     ();
     Q_INVOKABLE void stopVideo      ();

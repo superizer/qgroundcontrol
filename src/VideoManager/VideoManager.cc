@@ -93,7 +93,7 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    qmlRegisterUncreatableType<VideoReceiver>("QGroundControl",              1, 0, "VideoReceiver","Reference only");
 
    // TODO: Those connections should be Per Video, not per VideoManager.
-   _videoSettings = toolbox->settingsManager()->videoSettings();
+   _videoSettings = toolbox->settingsManager()->videoSettings1();
    QString videoSource = _videoSettings->videoSource()->rawValue().toString();
    connect(_videoSettings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
    connect(_videoSettings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
@@ -206,6 +206,135 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
 
 #endif
 }
+
+void
+VideoManager::setToolboxMod(QGCToolbox *toolbox, int settingNumber)
+{
+   QGCTool::setToolbox(toolbox);
+   QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
+   qmlRegisterUncreatableType<VideoManager> ("QGroundControl.VideoManager", 1, 0, "VideoManager", "Reference only");
+   qmlRegisterUncreatableType<VideoReceiver>("QGroundControl",              1, 0, "VideoReceiver","Reference only");
+
+   // TODO: Those connections should be Per Video, not per VideoManager.
+   if(settingNumber == 1)
+      _videoSettings = toolbox->settingsManager()->videoSettings1();
+   else // 2
+      _videoSettings = toolbox->settingsManager()->videoSettings2();
+
+   QString videoSource = _videoSettings->videoSource()->rawValue().toString();
+   connect(_videoSettings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
+   connect(_videoSettings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
+   connect(_videoSettings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
+   connect(_videoSettings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
+   connect(_videoSettings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
+   connect(_videoSettings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
+   MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
+   connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
+
+#if defined(QGC_GST_STREAMING)
+    GStreamer::blacklist(static_cast<VideoSettings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
+#ifndef QGC_DISABLE_UVC
+   // If we are using a UVC camera setup the device name
+   _updateUVC();
+#endif
+
+    emit isGStreamerChanged();
+    qCDebug(VideoManagerLog) << "New Video Source:" << videoSource;
+#if defined(QGC_GST_STREAMING)
+    _videoReceiver[0] = toolbox->corePlugin()->createVideoReceiver(this);
+    _videoReceiver[1] = toolbox->corePlugin()->createVideoReceiver(this);
+
+    connect(_videoReceiver[0], &VideoReceiver::streamingChanged, this, [this](bool active){
+        _streaming = active;
+        emit streamingChanged();
+    });
+
+    connect(_videoReceiver[0], &VideoReceiver::onStartComplete, this, [this](VideoReceiver::STATUS status) {
+        if (status == VideoReceiver::STATUS_OK) {
+            _videoStarted[0] = true;
+            if (_videoSink[0] != nullptr) {
+                // It is absolytely ok to have video receiver active (streaming) and decoding not active
+                // It should be handy for cases when you have many streams and want to show only some of them
+                // NOTE that even if decoder did not start it is still possible to record video
+                _videoReceiver[0]->startDecoding(_videoSink[0]);
+            }
+        } else if (status == VideoReceiver::STATUS_INVALID_URL) {
+            // Invalid URL - don't restart
+        } else if (status == VideoReceiver::STATUS_INVALID_STATE) {
+            // Already running
+        } else {
+            _restartVideo(0);
+        }
+    });
+
+    connect(_videoReceiver[0], &VideoReceiver::onStopComplete, this, [this](VideoReceiver::STATUS) {
+        _videoStarted[0] = false;
+        _startReceiver(0);
+    });
+
+    connect(_videoReceiver[0], &VideoReceiver::decodingChanged, this, [this](bool active){
+        _decoding = active;
+        emit decodingChanged();
+    });
+
+    connect(_videoReceiver[0], &VideoReceiver::recordingChanged, this, [this](bool active){
+        _recording = active;
+        if (!active) {
+            _subtitleWriter.stopCapturingTelemetry();
+        }
+        emit recordingChanged();
+    });
+
+    connect(_videoReceiver[0], &VideoReceiver::recordingStarted, this, [this](){
+        _subtitleWriter.startCapturingTelemetry(_videoFile);
+    });
+
+    connect(_videoReceiver[0], &VideoReceiver::videoSizeChanged, this, [this](QSize size){
+        _videoSize = ((quint32)size.width() << 16) | (quint32)size.height();
+        emit videoSizeChanged();
+    });
+
+    //connect(_videoReceiver, &VideoReceiver::onTakeScreenshotComplete, this, [this](VideoReceiver::STATUS status){
+    //    if (status == VideoReceiver::STATUS_OK) {
+    //    }
+    //});
+
+    // FIXME: AV: I believe _thermalVideoReceiver should be handled just like _videoReceiver in terms of event
+    // and I expect that it will be changed during multiple video stream activity
+    if (_videoReceiver[1] != nullptr) {
+        connect(_videoReceiver[1], &VideoReceiver::onStartComplete, this, [this](VideoReceiver::STATUS status) {
+            if (status == VideoReceiver::STATUS_OK) {
+                _videoStarted[1] = true;
+                if (_videoSink[1] != nullptr) {
+                    _videoReceiver[1]->startDecoding(_videoSink[1]);
+                }
+            } else if (status == VideoReceiver::STATUS_INVALID_URL) {
+                // Invalid URL - don't restart
+            } else if (status == VideoReceiver::STATUS_INVALID_STATE) {
+                // Already running
+            } else {
+                _restartVideo(1);
+            }
+        });
+
+        connect(_videoReceiver[1], &VideoReceiver::onStopComplete, this, [this](VideoReceiver::STATUS) {
+            _videoStarted[1] = false;
+            _startReceiver(1);
+        });
+    }
+#endif
+    _updateSettings(0);
+    _updateSettings(1);
+    if(isGStreamer()) {
+        startVideo();
+    } else {
+        stopVideo();
+    }
+
+#endif
+}
+
+
 
 void VideoManager::_cleanupOldVideos()
 {
@@ -630,22 +759,22 @@ VideoManager::_updateSettings(unsigned id)
                 switch(pInfo->type()) {
                     case VIDEO_STREAM_TYPE_RTSP:
                         if ((settingsChanged |= _updateVideoUri(id, pInfo->uri()))) {
-                            _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceRTSP);
+                            _toolbox->settingsManager()->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceRTSP);
                         }
                         break;
                     case VIDEO_STREAM_TYPE_TCP_MPEG:
                         if ((settingsChanged |= _updateVideoUri(id, pInfo->uri()))) {
-                            _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceTCP);
+                            _toolbox->settingsManager()->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceTCP);
                         }
                         break;
                     case VIDEO_STREAM_TYPE_RTPUDP:
                         if ((settingsChanged |= _updateVideoUri(id, QStringLiteral("udp://0.0.0.0:%1").arg(pInfo->uri())))) {
-                            _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
+                            _toolbox->settingsManager()->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
                         }
                         break;
                     case VIDEO_STREAM_TYPE_MPEG_TS_H264:
                         if ((settingsChanged |= _updateVideoUri(id, QStringLiteral("mpegts://0.0.0.0:%1").arg(pInfo->uri())))) {
-                            _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceMPEGTS);
+                            _toolbox->settingsManager()->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceMPEGTS);
                         }
                         break;
                     default:

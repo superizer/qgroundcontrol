@@ -386,8 +386,8 @@ QGCCameraControl::takePhoto()
             _setPhotoStatus(PHOTO_CAPTURE_IN_PROGRESS);
             _captureInfoRetries = 0;
             //-- Capture local image as well
-            if(qgcApp()->toolbox()->videoManager()) {
-                qgcApp()->toolbox()->videoManager()->grabImage();
+            if(qgcApp()->toolbox()->videoManager1()) {
+                qgcApp()->toolbox()->videoManager1()->grabImage();
             }
             return true;
         }
@@ -1557,11 +1557,11 @@ QGCCameraControl::handleCaptureStatus(const mavlink_camera_capture_status_t& cap
     //-- Time Lapse
     if(photoStatus() == PHOTO_CAPTURE_INTERVAL_IDLE || photoStatus() == PHOTO_CAPTURE_INTERVAL_IN_PROGRESS) {
         //-- Capture local image as well
-        if(qgcApp()->toolbox()->videoManager()) {
+        if(qgcApp()->toolbox()->videoManager1()) {
             QString photoPath = qgcApp()->toolbox()->settingsManager()->appSettings()->savePath()->rawValue().toString() + QStringLiteral("/Photo");
             QDir().mkpath(photoPath);
             photoPath += + "/" + QDateTime::currentDateTime().toString("yyyy-MM-dd_hh.mm.ss.zzz") + ".jpg";
-            qgcApp()->toolbox()->videoManager()->grabImage(photoPath);
+            qgcApp()->toolbox()->videoManager1()->grabImage(photoPath);
         }
     }
 }
@@ -2060,7 +2060,7 @@ QGCCameraControl::_checkForVideoStreams()
 {
     if(_info.flags & CAMERA_CAP_FLAGS_HAS_VIDEO_STREAM) {
         //-- Skip it if using Taisync as it has its own video settings
-        if(!qgcApp()->toolbox()->videoManager()->isTaisync()) {
+        if(!qgcApp()->toolbox()->videoManager1()->isTaisync()) {
             connect(&_streamInfoTimer, &QTimer::timeout, this, &QGCCameraControl::_streamTimeout);
             _streamInfoTimer.setSingleShot(false);
             connect(&_streamStatusTimer, &QTimer::timeout, this, &QGCCameraControl::_streamStatusTimeout);

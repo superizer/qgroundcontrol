@@ -67,7 +67,8 @@ public:
     AppSettings*                    appSettings                 (void) { return _appSettings; }
     UnitsSettings*                  unitsSettings               (void) { return _unitsSettings; }
     AutoConnectSettings*            autoConnectSettings         (void) { return _autoConnectSettings; }
-    VideoSettings*                  videoSettings               (void) { return _videoSettings; }
+    VideoSettings*                  videoSettings1              (void) { return _videoSettings1; }
+    VideoSettings*                  videoSettings2              (void) { return _videoSettings2; }
     FlightMapSettings*              flightMapSettings           (void) { return _flightMapSettings; }
     RTKSettings*                    rtkSettings                 (void) { return _rtkSettings; }
     FlyViewSettings*                flyViewSettings             (void) { return _flyViewSettings; }
@@ -86,7 +87,8 @@ private:
     AppSettings*                    _appSettings;
     UnitsSettings*                  _unitsSettings;
     AutoConnectSettings*            _autoConnectSettings;
-    VideoSettings*                  _videoSettings;
+    VideoSettings*                  _videoSettings1;
+    VideoSettings*                  _videoSettings2;
     FlightMapSettings*              _flightMapSettings;
     RTKSettings*                    _rtkSettings;
     FlyViewSettings*                _flyViewSettings;

@@ -72,7 +72,8 @@ QGCToolbox::QGCToolbox(QGCApplication* app)
     _uasMessageHandler      = new UASMessageHandler         (app, this);
     _qgcPositionManager     = new QGCPositionManager        (app, this);
     _followMe               = new FollowMe                  (app, this);
-    _videoManager           = new VideoManager              (app, this);
+    _videoManager1          = new VideoManager              (app, this);
+    _videoManager2          = new VideoManager              (app, this);
     _mavlinkLogManager      = new MAVLinkLogManager         (app, this);
     _adsbVehicleManager     = new ADSBVehicleManager        (app, this);
 #if defined(QGC_ENABLE_PAIRING)
@@ -116,7 +117,8 @@ void QGCToolbox::setChildToolboxes(void)
     _uasMessageHandler->setToolbox(this);
     _followMe->setToolbox(this);
     _qgcPositionManager->setToolbox(this);
-    _videoManager->setToolbox(this);
+    _videoManager1->setToolboxMod(this, 1);
+    _videoManager2->setToolboxMod(this, 2);
     _mavlinkLogManager->setToolbox(this);
     _airspaceManager->setToolbox(this);
     _adsbVehicleManager->setToolbox(this);

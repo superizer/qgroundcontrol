@@ -47,16 +47,33 @@ Rectangle {
     property real   _margins:                   ScreenTools.defaultFontPixelWidth
     property var    _planViewSettings:          QGroundControl.settingsManager.planViewSettings
     property var    _flyViewSettings:           QGroundControl.settingsManager.flyViewSettings
-    property var    _videoSettings:             QGroundControl.settingsManager.videoSettings
-    property string _videoSource:               _videoSettings.videoSource.value
-    property bool   _isGst:                     QGroundControl.videoManager.isGStreamer
-    property bool   _isUDP264:                  _isGst && _videoSource === _videoSettings.udp264VideoSource
-    property bool   _isUDP265:                  _isGst && _videoSource === _videoSettings.udp265VideoSource
-    property bool   _isRTSP:                    _isGst && _videoSource === _videoSettings.rtspVideoSource
-    property bool   _isTCP:                     _isGst && _videoSource === _videoSettings.tcpVideoSource
-    property bool   _isMPEGTS:                  _isGst && _videoSource === _videoSettings.mpegtsVideoSource
-    property bool   _videoAutoStreamConfig:     QGroundControl.videoManager.autoStreamConfigured
-    property bool   _showSaveVideoSettings:     _isGst || _videoAutoStreamConfig
+    // Video Settings 1
+    property var    _videoSettings1:             QGroundControl.settingsManager.videoSettings1
+    property string _videoSource1:               _videoSettings1.videoSource.value
+    // Video Setting 2
+    property var    _videoSettings2:             QGroundControl.settingsManager.videoSettings2
+    property string _videoSource2:               _videoSettings2.videoSource.value
+
+    // Checking variables for Video Setting 1
+    property bool   _isGst_1:                   QGroundControl.videoManager1.isGStreamer
+    property bool   _isUDP264_1:                _isGst && _videoSource1 === _videoSettings1.udp264VideoSource
+    property bool   _isUDP265_1:                _isGst && _videoSource1 === _videoSettings1.udp265VideoSource
+    property bool   _isRTSP_1:                  _isGst && _videoSource1 === _videoSettings1.rtspVideoSource
+    property bool   _isTCP_1:                   _isGst && _videoSource1 === _videoSettings1.tcpVideoSource
+    property bool   _isMPEGTS_1:                _isGst && _videoSource1 === _videoSettings1.mpegtsVideoSource
+    property bool   _videoAutoStreamConfig_1:   QGroundControl.videoManager1.autoStreamConfigured
+    property bool   _showSaveVideoSettings_1:   _isGst_1 || _videoAutoStreamConfig_1
+
+    // Checking variables for Video Setting 2
+    property bool   _isGst_2:                   QGroundControl.videoManager2.isGStreamer
+    property bool   _isUDP264_2:                _isGst && _videoSource2 === _videoSettings2.udp264VideoSource
+    property bool   _isUDP265_2:                _isGst && _videoSource2 === _videoSettings2.udp265VideoSource
+    property bool   _isRTSP_2:                  _isGst && _videoSource2 === _videoSettings2.rtspVideoSource
+    property bool   _isTCP_2:                   _isGst && _videoSource2 === _videoSettings2.tcpVideoSource
+    property bool   _isMPEGTS_2:                _isGst && _videoSource2 === _videoSettings2.mpegtsVideoSource
+    property bool   _videoAutoStreamConfig_2:   QGroundControl.videoManager2.autoStreamConfigured
+    property bool   _showSaveVideoSettings_2:   _isGst_2 || _videoAutoStreamConfig_2
+
     property bool   _disableAllDataPersistence: QGroundControl.settingsManager.appSettings.disableAllPersistence.rawValue
 
     property string gpsDisabled: "Disabled"
@@ -183,7 +200,7 @@ Rectangle {
 
                             GridLayout {
                                 columns: 2
-
+ 
                                 QGCLabel {
                                     text:               qsTr("Guided Command Settings")
                                     Layout.columnSpan:  2
@@ -224,104 +241,105 @@ Rectangle {
                                 }
                             }
 
+                            // Video Setting 1 UI
                             GridLayout {
-                                id:         videoGrid
+                                id:         videoGrid1
                                 columns:    2
-                                visible:    _videoSettings.visible
+                                visible:    _videoSettings1.visible
 
                                 QGCLabel {
-                                    text:               qsTr("Video Settings")
+                                    text:               qsTr("Video Settings 1")
                                     Layout.columnSpan:  2
                                     Layout.alignment:   Qt.AlignHCenter
                                 }
 
                                 QGCLabel {
-                                    id:         videoSourceLabel
+                                    id:         videoSourceLabel1
                                     text:       qsTr("Source")
-                                    visible:    !_videoAutoStreamConfig && _videoSettings.videoSource.visible
+                                    visible:    !_videoAutoStreamConfig_1 && _videoSettings1.videoSource.visible
                                 }
                                 FactComboBox {
-                                    id:                     videoSource
+                                    id:                     videoSource1
                                     Layout.preferredWidth:  _comboFieldWidth
                                     indexModel:             false
-                                    fact:                   _videoSettings.videoSource
-                                    visible:                videoSourceLabel.visible
+                                    fact:                   _videoSettings1.videoSource
+                                    visible:                videoSourceLabel1.visible
                                 }
 
                                 QGCLabel {
-                                    id:         udpPortLabel
+                                    id:         udpPortLabel1
                                     text:       qsTr("UDP Port")
-                                    visible:    !_videoAutoStreamConfig && (_isUDP264 || _isUDP265 || _isMPEGTS) && _videoSettings.udpPort.visible
+                                    visible:    !_videoAutoStreamConfig_1 && (_isUDP264_1 || _isUDP265_1 || _isMPEGTS_1) && _videoSettings1.udpPort.visible
                                 }
                                 FactTextField {
                                     Layout.preferredWidth:  _comboFieldWidth
-                                    fact:                   _videoSettings.udpPort
-                                    visible:                udpPortLabel.visible
+                                    fact:                   _videoSettings1.udpPort
+                                    visible:                udpPortLabel1.visible
                                 }
 
                                 QGCLabel {
-                                    id:         rtspUrlLabel
+                                    id:         rtspUrlLabel1
                                     text:       qsTr("RTSP URL")
-                                    visible:    !_videoAutoStreamConfig && _isRTSP && _videoSettings.rtspUrl.visible
+                                    visible:    !_videoAutoStreamConfig_1 && _isRTSP_1 && _videoSettings1.rtspUrl.visible
                                 }
                                 FactTextField {
                                     Layout.preferredWidth:  _comboFieldWidth
-                                    fact:                   _videoSettings.rtspUrl
-                                    visible:                rtspUrlLabel.visible
+                                    fact:                   _videoSettings1.rtspUrl
+                                    visible:                rtspUrlLabel1.visible
                                 }
 
                                 QGCLabel {
-                                    id:         tcpUrlLabel
+                                    id:         tcpUrlLabel1
                                     text:       qsTr("TCP URL")
-                                    visible:    !_videoAutoStreamConfig && _isTCP && _videoSettings.tcpUrl.visible
+                                    visible:    !_videoAutoStreamConfig_1 && _isTCP_1 && _videoSettings1.tcpUrl.visible
                                 }
                                 FactTextField {
                                     Layout.preferredWidth:  _comboFieldWidth
-                                    fact:                   _videoSettings.tcpUrl
-                                    visible:                tcpUrlLabel.visible
+                                    fact:                   _videoSettings1.tcpUrl
+                                    visible:                tcpUrlLabel1.visible
                                 }
 
                                 QGCLabel {
                                     text:                   qsTr("Aspect Ratio")
-                                    visible:                !_videoAutoStreamConfig && _isGst && _videoSettings.aspectRatio.visible
+                                    visible:                !_videoAutoStreamConfig_1 && _isGst_1 && _videoSettings1.aspectRatio.visible
                                 }
                                 FactTextField {
                                     Layout.preferredWidth:  _comboFieldWidth
-                                    fact:                   _videoSettings.aspectRatio
-                                    visible:                !_videoAutoStreamConfig && _isGst && _videoSettings.aspectRatio.visible
+                                    fact:                   _videoSettings1.aspectRatio
+                                    visible:                !_videoAutoStreamConfig_1 && _isGst_1 && _videoSettings1.aspectRatio.visible
                                 }
 
                                 QGCLabel {
-                                    id:         videoFileFormatLabel
+                                    id:         videoFileFormatLabel1
                                     text:       qsTr("File Format")
-                                    visible:    _showSaveVideoSettings && _videoSettings.recordingFormat.visible
+                                    visible:    _showSaveVideoSettings_1 && _videoSettings1.recordingFormat.visible
                                 }
                                 FactComboBox {
                                     Layout.preferredWidth:  _comboFieldWidth
-                                    fact:                   _videoSettings.recordingFormat
-                                    visible:                videoFileFormatLabel.visible
+                                    fact:                   _videoSettings1.recordingFormat
+                                    visible:                videoFileFormatLabel1.visible
                                 }
 
                                 QGCLabel {
-                                    id:         maxSavedVideoStorageLabel
+                                    id:         maxSavedVideoStorageLabel1
                                     text:       qsTr("Max Storage Usage")
-                                    visible:    _showSaveVideoSettings && _videoSettings.maxVideoSize.visible && _videoSettings.enableStorageLimit.value
+                                    visible:    _showSaveVideoSettings_1 && _videoSettings1.maxVideoSize.visible && _videoSettings1.enableStorageLimit.value
                                 }
                                 FactTextField {
                                     Layout.preferredWidth:  _comboFieldWidth
-                                    fact:                   _videoSettings.maxVideoSize
-                                    visible:                _showSaveVideoSettings && _videoSettings.enableStorageLimit.value && maxSavedVideoStorageLabel.visible
+                                    fact:                   _videoSettings1.maxVideoSize
+                                    visible:                _showSaveVideoSettings_1 && _videoSettings1.enableStorageLimit.value && maxSavedVideoStorageLabel1.visible
                                 }
 
                                 QGCLabel {
-                                    id:         videoDecodeLabel
+                                    id:         videoDecodeLabel1
                                     text:       qsTr("Video decode priority")
-                                    visible:    forceVideoDecoderComboBox.visible
+                                    visible:    forceVideoDecoderComboBox1.visible
                                 }
                                 FactComboBox {
-                                    id:                     forceVideoDecoderComboBox
+                                    id:                     forceVideoDecoderComboBox1
                                     Layout.preferredWidth:  _comboFieldWidth
-                                    fact:                   _videoSettings.forceVideoDecoder
+                                    fact:                   _videoSettings1.forceVideoDecoder
                                     visible:                fact.visible
                                     indexModel:             false
                                 }
@@ -329,22 +347,147 @@ Rectangle {
                                 Item { width: 1; height: 1}
                                 FactCheckBox {
                                     text:       qsTr("Disable When Disarmed")
-                                    fact:       _videoSettings.disableWhenDisarmed
-                                    visible:    !_videoAutoStreamConfig && _isGst && fact.visible
+                                    fact:       _videoSettings1.disableWhenDisarmed
+                                    visible:    !_videoAutoStreamConfig_1 && _isGst_1 && fact.visible
                                 }
 
                                 Item { width: 1; height: 1}
                                 FactCheckBox {
                                     text:       qsTr("Low Latency Mode")
-                                    fact:       _videoSettings.lowLatencyMode
-                                    visible:    !_videoAutoStreamConfig && _isGst && fact.visible
+                                    fact:       _videoSettings1.lowLatencyMode
+                                    visible:    !_videoAutoStreamConfig_1 && _isGst_1 && fact.visible
                                 }
 
                                 Item { width: 1; height: 1}
                                 FactCheckBox {
                                     text:       qsTr("Auto-Delete Saved Recordings")
-                                    fact:       _videoSettings.enableStorageLimit
-                                    visible:    _showSaveVideoSettings && fact.visible
+                                    fact:       _videoSettings1.enableStorageLimit
+                                    visible:    _showSaveVideoSettings_1 && fact.visible
+                                }
+                            }
+
+                            // Video Setting 2 UI
+                            GridLayout {
+                                id:         videoGrid2
+                                columns:    2
+                                visible:    _videoSettings2.visible
+
+                                QGCLabel {
+                                    text:               qsTr("Video Settings 2")
+                                    Layout.columnSpan:  2
+                                    Layout.alignment:   Qt.AlignHCenter
+                                }
+
+                                QGCLabel {
+                                    id:         videoSourceLabel2
+                                    text:       qsTr("Source")
+                                    visible:    !_videoAutoStreamConfig_2 && _videoSettings2.videoSource.visible
+                                }
+                                FactComboBox {
+                                    id:                     videoSource2
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    indexModel:             false
+                                    fact:                   _videoSettings1.videoSource
+                                    visible:                videoSourceLabel2.visible
+                                }
+
+                                QGCLabel {
+                                    id:         udpPortLabel2
+                                    text:       qsTr("UDP Port")
+                                    visible:    !_videoAutoStreamConfig_2 && (_isUDP264_2 || _isUDP265_2 || _isMPEGTS_2) && _videoSettings2.udpPort.visible
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings2.udpPort
+                                    visible:                udpPortLabel2.visible
+                                }
+
+                                QGCLabel {
+                                    id:         rtspUrlLabel2
+                                    text:       qsTr("RTSP URL")
+                                    visible:    !_videoAutoStreamConfig_2 && _isRTSP_2 && _videoSettings2.rtspUrl.visible
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings2.rtspUrl
+                                    visible:                rtspUrlLabel2.visible
+                                }
+
+                                QGCLabel {
+                                    id:         tcpUrlLabel2
+                                    text:       qsTr("TCP URL")
+                                    visible:    !_videoAutoStreamConfig_2 && _isTCP_2 && _videoSettings2.tcpUrl.visible
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings2.tcpUrl
+                                    visible:                tcpUrlLabel2.visible
+                                }
+
+                                QGCLabel {
+                                    text:                   qsTr("Aspect Ratio")
+                                    visible:                !_videoAutoStreamConfig_2 && _isGst_2 && _videoSettings2.aspectRatio.visible
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings2.aspectRatio
+                                    visible:                !_videoAutoStreamConfig_2 && _isGst_2 && _videoSettings2.aspectRatio.visible
+                                }
+
+                                QGCLabel {
+                                    id:         videoFileFormatLabel2
+                                    text:       qsTr("File Format")
+                                    visible:    _showSaveVideoSettings_2 && _videoSettings2.recordingFormat.visible
+                                }
+                                FactComboBox {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings2.recordingFormat
+                                    visible:                videoFileFormatLabel2.visible
+                                }
+
+                                QGCLabel {
+                                    id:         maxSavedVideoStorageLabel2
+                                    text:       qsTr("Max Storage Usage")
+                                    visible:    _showSaveVideoSettings_2 && _videoSettings2.maxVideoSize.visible && _videoSettings2.enableStorageLimit.value
+                                }
+                                FactTextField {
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings2.maxVideoSize
+                                    visible:                _showSaveVideoSettings_2 && _videoSettings2.enableStorageLimit.value && maxSavedVideoStorageLabel2.visible
+                                }
+
+                                QGCLabel {
+                                    id:         videoDecodeLabel2
+                                    text:       qsTr("Video decode priority")
+                                    visible:    forceVideoDecoderComboBox2.visible
+                                }
+                                FactComboBox {
+                                    id:                     forceVideoDecoderComboBox2
+                                    Layout.preferredWidth:  _comboFieldWidth
+                                    fact:                   _videoSettings2.forceVideoDecoder
+                                    visible:                fact.visible
+                                    indexModel:             false
+                                }
+
+                                Item { width: 1; height: 1}
+                                FactCheckBox {
+                                    text:       qsTr("Disable When Disarmed")
+                                    fact:       _videoSettings2.disableWhenDisarmed
+                                    visible:    !_videoAutoStreamConfig_2 && _isGst_2 && fact.visible
+                                }
+
+                                Item { width: 1; height: 1}
+                                FactCheckBox {
+                                    text:       qsTr("Low Latency Mode")
+                                    fact:       _videoSettings2.lowLatencyMode
+                                    visible:    !_videoAutoStreamConfig_2 && _isGst_2 && fact.visible
+                                }
+
+                                Item { width: 1; height: 1}
+                                FactCheckBox {
+                                    text:       qsTr("Auto-Delete Saved Recordings")
+                                    fact:       _videoSettings2.enableStorageLimit
+                                    visible:    _showSaveVideoSettings_2 && fact.visible
                                 }
                             }
                         }

@@ -181,9 +181,9 @@ Vehicle::Vehicle(LinkInterface*             link,
     _vehicleLinkManager->_addLink(link);
 
     // Set video stream to udp if running ArduSub and Video is disabled
-    if (sub() && _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoDisabled) {
-        _settingsManager->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
-        _settingsManager->videoSettings()->lowLatencyMode()->setRawValue(true);
+    if (sub() && _settingsManager->videoSettings1()->videoSource()->rawValue() == VideoSettings::videoDisabled) {
+        _settingsManager->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
+        _settingsManager->videoSettings1()->lowLatencyMode()->setRawValue(true);
     }
 
     //-- Airspace Management
@@ -425,9 +425,9 @@ void Vehicle::_commonInit()
     connect(&_flightTimeUpdater, &QTimer::timeout, this, &Vehicle::_updateFlightTime);
 
     // Set video stream to udp if running ArduSub and Video is disabled
-    if (sub() && _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoDisabled) {
-        _settingsManager->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
-        _settingsManager->videoSettings()->lowLatencyMode()->setRawValue(true);
+    if (sub() && _settingsManager->videoSettings1()->videoSource()->rawValue() == VideoSettings::videoDisabled) {
+        _settingsManager->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
+        _settingsManager->videoSettings1()->lowLatencyMode()->setRawValue(true);
     }
 
     //-- Airspace Management
@@ -1421,10 +1421,10 @@ void Vehicle::_updateArmed(bool armed)
             _trajectoryPoints->stop();
             _flightTimerStop();
             // Also handle Video Streaming
-            if(qgcApp()->toolbox()->videoManager()->videoReceiver()) {
-                if(_settingsManager->videoSettings()->disableWhenDisarmed()->rawValue().toBool()) {
-                    _settingsManager->videoSettings()->streamEnabled()->setRawValue(false);
-                    qgcApp()->toolbox()->videoManager()->videoReceiver()->stop();
+            if(qgcApp()->toolbox()->videoManager1()->videoReceiver()) {
+                if(_settingsManager->videoSettings1()->disableWhenDisarmed()->rawValue().toBool()) {
+                    _settingsManager->videoSettings1()->streamEnabled()->setRawValue(false);
+                    qgcApp()->toolbox()->videoManager1()->videoReceiver()->stop();
                 }
             }
         }

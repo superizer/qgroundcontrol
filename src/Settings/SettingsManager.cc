@@ -20,7 +20,7 @@ SettingsManager::SettingsManager(QGCApplication* app, QGCToolbox* toolbox)
     , _appSettings                  (nullptr)
     , _unitsSettings                (nullptr)
     , _autoConnectSettings          (nullptr)
-    , _videoSettings                (nullptr)
+    , _videoSettings1               (nullptr)
     , _flightMapSettings            (nullptr)
     , _rtkSettings                  (nullptr)
     , _flyViewSettings              (nullptr)
@@ -45,7 +45,8 @@ void SettingsManager::setToolbox(QGCToolbox *toolbox)
     _unitsSettings =                new UnitsSettings               (this);        // Must be first since AppSettings references it
     _appSettings =                  new AppSettings                 (this);
     _autoConnectSettings =          new AutoConnectSettings         (this);
-    _videoSettings =                new VideoSettings               (this);
+    _videoSettings1 =               new VideoSettings               (this);
+    _videoSettings2 =               new VideoSettings               (this);
     _flightMapSettings =            new FlightMapSettings           (this);
     _rtkSettings =                  new RTKSettings                 (this);
     _flyViewSettings =              new FlyViewSettings             (this);

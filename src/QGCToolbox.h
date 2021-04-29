@@ -63,7 +63,8 @@ public:
     UASMessageHandler*          uasMessageHandler       () { return _uasMessageHandler; }
     FollowMe*                   followMe                () { return _followMe; }
     QGCPositionManager*         qgcPositionManager      () { return _qgcPositionManager; }
-    VideoManager*               videoManager            () { return _videoManager; }
+    VideoManager*               videoManager1           () { return _videoManager1; }
+    VideoManager*               videoManager2           () { return _videoManager2; }
     MAVLinkLogManager*          mavlinkLogManager       () { return _mavlinkLogManager; }
     QGCCorePlugin*              corePlugin              () { return _corePlugin; }
     SettingsManager*            settingsManager         () { return _settingsManager; }
@@ -103,7 +104,8 @@ private:
     UASMessageHandler*          _uasMessageHandler      = nullptr;
     FollowMe*                   _followMe               = nullptr;
     QGCPositionManager*         _qgcPositionManager     = nullptr;
-    VideoManager*               _videoManager           = nullptr;
+    VideoManager*               _videoManager1          = nullptr;
+    VideoManager*               _videoManager2          = nullptr;
     MAVLinkLogManager*          _mavlinkLogManager      = nullptr;
     QGCCorePlugin*              _corePlugin             = nullptr;
     SettingsManager*            _settingsManager        = nullptr;

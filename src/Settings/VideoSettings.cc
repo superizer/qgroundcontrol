@@ -180,7 +180,7 @@ bool VideoSettings::streamConfigured(void)
     return false;
 #endif
     //-- First, check if it's autoconfigured
-    if(qgcApp()->toolbox()->videoManager()->autoStreamConfigured()) {
+    if(qgcApp()->toolbox()->videoManager1()->autoStreamConfigured()) {
         qCDebug(VideoManagerLog) << "Stream auto configured";
         return true;
     }
