@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-#include "VideoSettings.h"
+#include "Video2Settings.h"
 #include "QGCApplication.h"
 #include "VideoManager.h"
 
@@ -19,19 +19,19 @@
 #include <QCameraInfo>
 #endif
 
-const char* VideoSettings::videoSourceNoVideo           = "No Video Available";
-const char* VideoSettings::videoDisabled                = "Video Stream Disabled";
-const char* VideoSettings::videoSourceRTSP              = "RTSP Video Stream";
-const char* VideoSettings::videoSourceUDPH264           = "UDP h.264 Video Stream";
-const char* VideoSettings::videoSourceUDPH265           = "UDP h.265 Video Stream";
-const char* VideoSettings::videoSourceTCP               = "TCP-MPEG2 Video Stream";
-const char* VideoSettings::videoSourceMPEGTS            = "MPEG-TS (h.264) Video Stream";
-const char* VideoSettings::videoSource3DRSolo           = "3DR Solo (requires restart)";
-const char* VideoSettings::videoSourceParrotDiscovery   = "Parrot Discovery";
+const char* Video2Settings::videoSourceNoVideo           = "No Video Available";
+const char* Video2Settings::videoDisabled                = "Video Stream Disabled";
+const char* Video2Settings::videoSourceRTSP              = "RTSP Video Stream";
+const char* Video2Settings::videoSourceUDPH264           = "UDP h.264 Video Stream";
+const char* Video2Settings::videoSourceUDPH265           = "UDP h.265 Video Stream";
+const char* Video2Settings::videoSourceTCP               = "TCP-MPEG2 Video Stream";
+const char* Video2Settings::videoSourceMPEGTS            = "MPEG-TS (h.264) Video Stream";
+const char* Video2Settings::videoSource3DRSolo           = "3DR Solo (requires restart)";
+const char* Video2Settings::videoSourceParrotDiscovery   = "Parrot Discovery";
 
-DECLARE_SETTINGGROUP(Video, "Video")
+DECLARE_SETTINGGROUP(Video2, "Video2")
 {
-    qmlRegisterUncreatableType<VideoSettings>("QGroundControl.SettingsManager", 1, 0, "VideoSettings", "Reference only");
+    qmlRegisterUncreatableType<Video2Settings>("QGroundControl.SettingsManager", 1, 0, "Video2Settings", "Reference only");
 
     // Setup enum values for videoSource settings into meta data
     QStringList videoSourceList;
@@ -87,7 +87,7 @@ DECLARE_SETTINGGROUP(Video, "Video")
     _setDefaults();
 }
 
-void VideoSettings::_setDefaults()
+void VideoSettings2::_setDefaults()
 {
     if (_noVideo) {
         _nameToMetaDataMap[videoSourceName]->setRawDefaultValue(videoSourceNoVideo);
@@ -96,19 +96,19 @@ void VideoSettings::_setDefaults()
     }
 }
 
-DECLARE_SETTINGSFACT(VideoSettings, aspectRatio)
-DECLARE_SETTINGSFACT(VideoSettings, videoFit)
-DECLARE_SETTINGSFACT(VideoSettings, gridLines)
-DECLARE_SETTINGSFACT(VideoSettings, showRecControl)
-DECLARE_SETTINGSFACT(VideoSettings, recordingFormat)
-DECLARE_SETTINGSFACT(VideoSettings, maxVideoSize)
-DECLARE_SETTINGSFACT(VideoSettings, enableStorageLimit)
-DECLARE_SETTINGSFACT(VideoSettings, rtspTimeout)
-DECLARE_SETTINGSFACT(VideoSettings, streamEnabled)
-DECLARE_SETTINGSFACT(VideoSettings, disableWhenDisarmed)
-DECLARE_SETTINGSFACT(VideoSettings, lowLatencyMode)
+DECLARE_SETTINGSFACT(Video2Settings, aspectRatio)
+DECLARE_SETTINGSFACT(Video2Settings, videoFit)
+DECLARE_SETTINGSFACT(Video2Settings, gridLines)
+DECLARE_SETTINGSFACT(Video2Settings, showRecControl)
+DECLARE_SETTINGSFACT(Video2Settings, recordingFormat)
+DECLARE_SETTINGSFACT(Video2Settings, maxVideoSize)
+DECLARE_SETTINGSFACT(Video2Settings, enableStorageLimit)
+DECLARE_SETTINGSFACT(Video2Settings, rtspTimeout)
+DECLARE_SETTINGSFACT(Video2Settings, streamEnabled)
+DECLARE_SETTINGSFACT(Video2Settings, disableWhenDisarmed)
+DECLARE_SETTINGSFACT(Video2Settings, lowLatencyMode)
 
-DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
+DECLARE_SETTINGSFACT_NO_FUNC(Video2Settings, videoSource)
 {
     if (!_videoSourceFact) {
         _videoSourceFact = _createSettingsFact(videoSourceName);
@@ -120,12 +120,12 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, videoSource)
                 _videoSourceFact->setRawValue(videoDisabled);
             }
         }
-        connect(_videoSourceFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+        connect(_videoSourceFact, &Fact::valueChanged, this, &Video2Settings::_configChanged);
     }
     return _videoSourceFact;
 }
 
-DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, forceVideoDecoder)
+DECLARE_SETTINGSFACT_NO_FUNC(Video2Settings, forceVideoDecoder)
 {
     if (!_forceVideoDecoderFact) {
         _forceVideoDecoderFact = _createSettingsFact(forceVideoDecoderName);
@@ -142,45 +142,45 @@ DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, forceVideoDecoder)
 #endif
         );
 
-        connect(_forceVideoDecoderFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+        connect(_forceVideoDecoderFact, &Fact::valueChanged, this, &Video2Settings::_configChanged);
     }
     return _forceVideoDecoderFact;
 }
 
-DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, udpPort)
+DECLARE_SETTINGSFACT_NO_FUNC(Video2Settings, udpPort)
 {
     if (!_udpPortFact) {
         _udpPortFact = _createSettingsFact(udpPortName);
-        connect(_udpPortFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+        connect(_udpPortFact, &Fact::valueChanged, this, &Video2Settings::_configChanged);
     }
     return _udpPortFact;
 }
 
-DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, rtspUrl)
+DECLARE_SETTINGSFACT_NO_FUNC(Video2Settings, rtspUrl)
 {
     if (!_rtspUrlFact) {
         _rtspUrlFact = _createSettingsFact(rtspUrlName);
-        connect(_rtspUrlFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+        connect(_rtspUrlFact, &Fact::valueChanged, this, &Video2Settings::_configChanged);
     }
     return _rtspUrlFact;
 }
 
-DECLARE_SETTINGSFACT_NO_FUNC(VideoSettings, tcpUrl)
+DECLARE_SETTINGSFACT_NO_FUNC(Video2Settings, tcpUrl)
 {
     if (!_tcpUrlFact) {
         _tcpUrlFact = _createSettingsFact(tcpUrlName);
-        connect(_tcpUrlFact, &Fact::valueChanged, this, &VideoSettings::_configChanged);
+        connect(_tcpUrlFact, &Fact::valueChanged, this, &Video2Settings::_configChanged);
     }
     return _tcpUrlFact;
 }
 
-bool VideoSettings::streamConfigured(void)
+bool VideoSettings2::streamConfigured(void)
 {
 #if !defined(QGC_GST_STREAMING)
     return false;
 #endif
     //-- First, check if it's autoconfigured
-    if(qgcApp()->toolbox()->videoManager1()->autoStreamConfigured()) {
+    if(qgcApp()->toolbox()->videoManager2()->autoStreamConfigured()) {
         qCDebug(VideoManagerLog) << "Stream auto configured";
         return true;
     }
@@ -212,7 +212,7 @@ bool VideoSettings::streamConfigured(void)
     return false;
 }
 
-void VideoSettings::_configChanged(QVariant)
+void VideoSettings2::_configChanged(QVariant)
 {
     emit streamConfiguredChanged(streamConfigured());
 }

@@ -7,17 +7,17 @@
  *
  ****************************************************************************/
 
-#ifndef VideoSettings_H
-#define VideoSettings_H
+#ifndef Video1Settings_H
+#define Video1Settings_H
 
 #include "SettingsGroup.h"
 
-class VideoSettings : public SettingsGroup
+class Video1Settings : public SettingsGroup
 {
     Q_OBJECT
 
 public:
-    VideoSettings(QObject* parent = nullptr);
+    Video1Settings(QObject* parent = nullptr);
     DEFINE_SETTING_NAME_GROUP()
 
     DEFINE_SETTINGFACT(videoSource)
