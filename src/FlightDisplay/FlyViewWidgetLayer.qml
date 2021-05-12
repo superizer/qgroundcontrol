@@ -177,7 +177,7 @@ Item {
         z:                          QGroundControl.zOrderTopMost + 1
         width:                      parent.width  - (_pipOverlay.width / 2)
         height:                     Math.min(parent.height * 0.25, ScreenTools.defaultFontPixelWidth * 16)
-        visible:                    _virtualJoystickEnabled && !QGroundControl.videoManager.fullScreen && !(_activeVehicle ? _activeVehicle.usingHighLatencyLink : false)
+        visible:                    _virtualJoystickEnabled && !QGroundControl.video1Manager.fullScreen && !(_activeVehicle ? _activeVehicle.usingHighLatencyLink : false)
         anchors.bottom:             parent.bottom
         anchors.bottomMargin:       parentToolInsets.leftEdgeBottomInset + ScreenTools.defaultFontPixelHeight * 2
         anchors.horizontalCenter:   parent.horizontalCenter
@@ -197,7 +197,7 @@ Item {
         anchors.top:            parent.top
         z:                      QGroundControl.zOrderWidgets
         maxHeight:              parent.height - y - parentToolInsets.bottomEdgeLeftInset - _toolsMargin
-        visible:                !QGroundControl.videoManager.fullScreen
+        visible:                !QGroundControl.video1Manager.fullScreen
 
         onDisplayPreFlightChecklist: mainWindow.showPopupDialogFromComponent(preFlightChecklistPopup)
 

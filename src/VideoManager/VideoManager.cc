@@ -30,7 +30,8 @@
 
 #if defined(QGC_GST_STREAMING)
 #include "GStreamer.h"
-#include "VideoSettings.h"
+#include "Video1Settings.h"
+#include "Video2Settings.h"
 #else
 #include "GLVideoItemStub.h"
 #endif
@@ -84,16 +85,18 @@ VideoManager::~VideoManager()
 }
 
 //-----------------------------------------------------------------------------
+
 void
 VideoManager::setToolbox(QGCToolbox *toolbox)
 {
+
    QGCTool::setToolbox(toolbox);
    QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
    qmlRegisterUncreatableType<VideoManager> ("QGroundControl.VideoManager", 1, 0, "VideoManager", "Reference only");
    qmlRegisterUncreatableType<VideoReceiver>("QGroundControl",              1, 0, "VideoReceiver","Reference only");
 
    // TODO: Those connections should be Per Video, not per VideoManager.
-   _videoSettings = toolbox->settingsManager()->videoSettings1();
+   _videoSettings = toolbox->settingsManager()->video1Settings();
    QString videoSource = _videoSettings->videoSource()->rawValue().toString();
    connect(_videoSettings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
    connect(_videoSettings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
@@ -105,7 +108,7 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
 
 #if defined(QGC_GST_STREAMING)
-    GStreamer::blacklist(static_cast<VideoSettings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
+    GStreamer::blacklist(static_cast<Video1Settings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
 #ifndef QGC_DISABLE_UVC
    // If we are using a UVC camera setup the device name
    _updateUVC();
@@ -208,7 +211,7 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
 }
 
 void
-VideoManager::setToolboxMod(QGCToolbox *toolbox, int settingNumber)
+VideoManager::setToolboxMod(QGCToolbox *toolbox, int _videoSettingNumber)
 {
    QGCTool::setToolbox(toolbox);
    QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
@@ -216,23 +219,41 @@ VideoManager::setToolboxMod(QGCToolbox *toolbox, int settingNumber)
    qmlRegisterUncreatableType<VideoReceiver>("QGroundControl",              1, 0, "VideoReceiver","Reference only");
 
    // TODO: Those connections should be Per Video, not per VideoManager.
-   if(settingNumber == 1)
-      _videoSettings = toolbox->settingsManager()->videoSettings1();
-   else // 2
-      _videoSettings = toolbox->settingsManager()->videoSettings2();
+   QString videoSource;
 
-   QString videoSource = _videoSettings->videoSource()->rawValue().toString();
-   connect(_videoSettings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
-   connect(_videoSettings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
-   connect(_videoSettings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
-   connect(_videoSettings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
-   connect(_videoSettings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
-   connect(_videoSettings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
+   videoSettingNumber = _videoSettingNumber;
+
+   if(videoSettingNumber == 1){
+   _video1Settings = toolbox->settingsManager()->video1Settings();
+   videoSource     = _video1Settings->videoSource()->rawValue().toString();
+   connect(_video1Settings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
+   connect(_video1Settings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
+   connect(_video1Settings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
+   connect(_video1Settings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
+   connect(_video1Settings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
+   connect(_video1Settings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
+   
+   }else{ // 2
+   _video2Settings = toolbox->settingsManager()->video2Settings();
+   videoSource     = _video2Settings->videoSource()->rawValue().toString();
+   connect(_video2Settings->videoSource(),   &Fact::rawValueChanged, this, &VideoManager::_videoSourceChanged);
+   connect(_video2Settings->udpPort(),       &Fact::rawValueChanged, this, &VideoManager::_udpPortChanged);
+   connect(_video2Settings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
+   connect(_video2Settings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
+   connect(_video2Settings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
+   connect(_video2Settings->lowLatencyMode(),&Fact::rawValueChanged, this, &VideoManager::_lowLatencyModeChanged);
+   }
+
+
    MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
 
 #if defined(QGC_GST_STREAMING)
-    GStreamer::blacklist(static_cast<VideoSettings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
+    if(videoSettingNumber == 1){
+      GStreamer::blacklist(static_cast<Video1Settings::VideoDecoderOptions>(_video1Settings->forceVideoDecoder()->rawValue().toInt()));
+    }else{ // 2
+      GStreamer::blacklist(static_cast<Video2Settings::VideoDecoderOptions>(_video2Settings->forceVideoDecoder()->rawValue().toInt()));
+    }
 #ifndef QGC_DISABLE_UVC
    // If we are using a UVC camera setup the device name
    _updateUVC();
@@ -340,9 +361,12 @@ void VideoManager::_cleanupOldVideos()
 {
 #if defined(QGC_GST_STREAMING)
     //-- Only perform cleanup if storage limit is enabled
-    if(!_videoSettings->enableStorageLimit()->rawValue().toBool()) {
-        return;
-    }
+   if(videoSettingNumber == 1){
+      if(!_video1Settings->enableStorageLimit()->rawValue().toBool()) return;
+   } else { // 2
+      if(!_video2Settings->enableStorageLimit()->rawValue().toBool()) return;
+   }
+    
     QString savePath = qgcApp()->toolbox()->settingsManager()->appSettings()->videoSavePath();
     QDir videoDir = QDir(savePath);
     videoDir.setFilter(QDir::Files | QDir::Readable | QDir::NoSymLinks | QDir::Writable);
@@ -360,7 +384,14 @@ void VideoManager::_cleanupOldVideos()
     if(!vidList.isEmpty()) {
         uint64_t total   = 0;
         //-- Settings are stored using MB
-        uint64_t maxSize = _videoSettings->maxVideoSize()->rawValue().toUInt() * 1024 * 1024;
+        uint64_t maxSize;
+
+        if(videoSettingNumber == 1){
+            maxSize = _video1Settings->maxVideoSize()->rawValue().toUInt() * 1024 * 1024;
+        } else { // 2
+            maxSize = _video2Settings->maxVideoSize()->rawValue().toUInt() * 1024 * 1024;
+        }
+         
         //-- Compute total used storage
         for(int i = 0; i < vidList.size(); i++) {
             total += vidList[i].size();
@@ -384,10 +415,16 @@ VideoManager::startVideo()
     if (qgcApp()->runningUnitTests()) {
         return;
     }
-
-    if(!_videoSettings->streamEnabled()->rawValue().toBool() || !_videoSettings->streamConfigured()) {
+    if(videoSettingNumber == 1){
+      if(!_video1Settings->streamEnabled()->rawValue().toBool() || !_video1Settings->streamConfigured()) {
         qCDebug(VideoManagerLog) << "Stream not enabled/configured";
         return;
+      }
+    }else{ // 2
+      if(!_video2Settings->streamEnabled()->rawValue().toBool() || !_video2Settings->streamConfigured()) {
+        qCDebug(VideoManagerLog) << "Stream not enabled/configured";
+        return;
+      }
     }
 
     _startReceiver(0);
@@ -418,7 +455,9 @@ VideoManager::startRecording(const QString& videoFile)
         return;
     }
 
-    const VideoReceiver::FILE_FORMAT fileFormat = static_cast<VideoReceiver::FILE_FORMAT>(_videoSettings->recordingFormat()->rawValue().toInt());
+    VideoReceiver::FILE_FORMAT fileFormat;
+    if(videoSettingNumber == 1) fileFormat = static_cast<VideoReceiver::FILE_FORMAT>(_video1Settings->recordingFormat()->rawValue().toInt());
+    else fileFormat = static_cast<VideoReceiver::FILE_FORMAT>(_video2Settings->recordingFormat()->rawValue().toInt());
 
     if(fileFormat < VideoReceiver::FILE_FORMAT_MIN || fileFormat >= VideoReceiver::FILE_FORMAT_MAX) {
         qgcApp()->showAppMessage(tr("Invalid video format defined."));
@@ -507,7 +546,12 @@ double VideoManager::aspectRatio()
         }
     }
     // FIXME: AV: use _videoReceiver->videoSize() to calculate AR (if AR is not specified in the settings?)
-    return _videoSettings->aspectRatio()->rawValue().toDouble();
+    if(videoSettingNumber == 1){
+      return _video1Settings->aspectRatio()->rawValue().toDouble();
+    }else{ // 2
+      return _video2Settings->aspectRatio()->rawValue().toDouble();
+    }
+    
 }
 
 //-----------------------------------------------------------------------------
@@ -544,7 +588,12 @@ double VideoManager::thermalHfov()
             return pInfo->aspectRatio();
         }
     }
-    return _videoSettings->aspectRatio()->rawValue().toDouble();
+    if(videoSettingNumber == 1){
+      return _video1Settings->aspectRatio()->rawValue().toDouble();
+    }else{ // 2
+      return _video2Settings->aspectRatio()->rawValue().toDouble();
+    }
+    
 }
 
 //-----------------------------------------------------------------------------
@@ -587,7 +636,13 @@ void
 VideoManager::_updateUVC()
 {
 #ifndef QGC_DISABLE_UVC
-    QString videoSource = _videoSettings->videoSource()->rawValue().toString();
+    QString videoSource;
+    if(videoSettingNumber == 1){
+      videoSource = _video1Settings->videoSource()->rawValue().toString();
+   }else{ // 2
+      videoSource = _video2Settings->videoSource()->rawValue().toString();
+   }
+     
     QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
     for (const QCameraInfo &cameraInfo: cameras) {
         if(cameraInfo.description() == videoSource) {
@@ -646,8 +701,14 @@ VideoManager::hasVideo()
     if(autoStreamConfigured()) {
         return true;
     }
-    QString videoSource = _videoSettings->videoSource()->rawValue().toString();
-    return !videoSource.isEmpty() && videoSource != VideoSettings::videoSourceNoVideo && videoSource != VideoSettings::videoDisabled;
+    if(videoSettingNumber == 1){
+      QString videoSource = _video1Settings->videoSource()->rawValue().toString();
+      return !videoSource.isEmpty() && videoSource != Video1Settings::videoSourceNoVideo && videoSource != Video1Settings::videoDisabled;
+    }else{ // 2
+      QString videoSource = _video2Settings->videoSource()->rawValue().toString();
+      return !videoSource.isEmpty() && videoSource != Video2Settings::videoSourceNoVideo && videoSource != Video2Settings::videoDisabled;
+    }
+    
 }
 
 //-----------------------------------------------------------------------------
@@ -655,15 +716,27 @@ bool
 VideoManager::isGStreamer()
 {
 #if defined(QGC_GST_STREAMING)
-    QString videoSource = _videoSettings->videoSource()->rawValue().toString();
-    return videoSource == VideoSettings::videoSourceUDPH264 ||
-            videoSource == VideoSettings::videoSourceUDPH265 ||
-            videoSource == VideoSettings::videoSourceRTSP ||
-            videoSource == VideoSettings::videoSourceTCP ||
-            videoSource == VideoSettings::videoSourceMPEGTS ||
-            videoSource == VideoSettings::videoSource3DRSolo ||
-            videoSource == VideoSettings::videoSourceParrotDiscovery ||
-            autoStreamConfigured();
+    if(videoSettingNumber == 1){
+      QString videoSource = _video1Settings->videoSource()->rawValue().toString();
+      return videoSource == Video1Settings::videoSourceUDPH264 ||
+               videoSource == Video1Settings::videoSourceUDPH265 ||
+               videoSource == Video1Settings::videoSourceRTSP ||
+               videoSource == Video1Settings::videoSourceTCP ||
+               videoSource == Video1Settings::videoSourceMPEGTS ||
+               videoSource == Video1Settings::videoSource3DRSolo ||
+               videoSource == Video1Settings::videoSourceParrotDiscovery ||
+               autoStreamConfigured();
+    }else{
+       QString videoSource = _video2Settings->videoSource()->rawValue().toString();
+       return videoSource == Video2Settings::videoSourceUDPH264 ||
+               videoSource == Video2Settings::videoSourceUDPH265 ||
+               videoSource == Video2Settings::videoSourceRTSP ||
+               videoSource == Video2Settings::videoSourceTCP ||
+               videoSource == Video2Settings::videoSourceMPEGTS ||
+               videoSource == Video2Settings::videoSource3DRSolo ||
+               videoSource == Video2Settings::videoSourceParrotDiscovery ||
+               autoStreamConfigured();      
+    }
 #else
     return false;
 #endif
@@ -740,10 +813,19 @@ VideoManager::_initVideo()
 bool
 VideoManager::_updateSettings(unsigned id)
 {
-    if(!_videoSettings)
-        return false;
+    if(videoSettingNumber == 1){
+      if(!_video1Settings) return false;
+    }else{ // 2
+      if(!_video2Settings) return false;
+    }
 
-    const bool lowLatencyStreaming  =_videoSettings->lowLatencyMode()->rawValue().toBool();
+   bool lowLatencyStreaming;
+    if(videoSettingNumber == 1){
+      lowLatencyStreaming = _video1Settings->lowLatencyMode()->rawValue().toBool();
+    }else{ // 2
+      lowLatencyStreaming = _video2Settings->lowLatencyMode()->rawValue().toBool();
+    }
+      
 
     bool settingsChanged = _lowLatencyStreaming[id] != lowLatencyStreaming;
 
@@ -759,22 +841,26 @@ VideoManager::_updateSettings(unsigned id)
                 switch(pInfo->type()) {
                     case VIDEO_STREAM_TYPE_RTSP:
                         if ((settingsChanged |= _updateVideoUri(id, pInfo->uri()))) {
-                            _toolbox->settingsManager()->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceRTSP);
+                            if(videoSettingNumber == 1) _toolbox->settingsManager()->video1Settings()->videoSource()->setRawValue(Video1Settings::videoSourceRTSP);
+                            else _toolbox->settingsManager()->video2Settings()->videoSource()->setRawValue(Video2Settings::videoSourceRTSP);
                         }
                         break;
                     case VIDEO_STREAM_TYPE_TCP_MPEG:
                         if ((settingsChanged |= _updateVideoUri(id, pInfo->uri()))) {
-                            _toolbox->settingsManager()->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceTCP);
+                            if(videoSettingNumber == 1) _toolbox->settingsManager()->video1Settings()->videoSource()->setRawValue(Video1Settings::videoSourceTCP);
+                            else _toolbox->settingsManager()->video2Settings()->videoSource()->setRawValue(Video2Settings::videoSourceTCP);
                         }
                         break;
                     case VIDEO_STREAM_TYPE_RTPUDP:
                         if ((settingsChanged |= _updateVideoUri(id, QStringLiteral("udp://0.0.0.0:%1").arg(pInfo->uri())))) {
-                            _toolbox->settingsManager()->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
+                            if(videoSettingNumber == 1) _toolbox->settingsManager()->video1Settings()->videoSource()->setRawValue(Video1Settings::videoSourceUDPH264);
+                            else _toolbox->settingsManager()->video2Settings()->videoSource()->setRawValue(Video2Settings::videoSourceUDPH264);
                         }
                         break;
                     case VIDEO_STREAM_TYPE_MPEG_TS_H264:
                         if ((settingsChanged |= _updateVideoUri(id, QStringLiteral("mpegts://0.0.0.0:%1").arg(pInfo->uri())))) {
-                            _toolbox->settingsManager()->videoSettings1()->videoSource()->setRawValue(VideoSettings::videoSourceMPEGTS);
+                            if(videoSettingNumber == 1) _toolbox->settingsManager()->video1Settings()->videoSource()->setRawValue(Video1Settings::videoSourceMPEGTS);
+                            else _toolbox->settingsManager()->video2Settings()->videoSource()->setRawValue(Video2Settings::videoSourceMPEGTS);
                         }
                         break;
                     default:
@@ -806,21 +892,39 @@ VideoManager::_updateSettings(unsigned id)
             return settingsChanged;
         }
     }
-    QString source = _videoSettings->videoSource()->rawValue().toString();
-    if (source == VideoSettings::videoSourceUDPH264)
-        settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
-    else if (source == VideoSettings::videoSourceUDPH265)
-        settingsChanged |= _updateVideoUri(0, QStringLiteral("udp265://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
-    else if (source == VideoSettings::videoSourceMPEGTS)
-        settingsChanged |= _updateVideoUri(0, QStringLiteral("mpegts://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
-    else if (source == VideoSettings::videoSourceRTSP)
-        settingsChanged |= _updateVideoUri(0, _videoSettings->rtspUrl()->rawValue().toString());
-    else if (source == VideoSettings::videoSourceTCP)
-        settingsChanged |= _updateVideoUri(0, QStringLiteral("tcp://%1").arg(_videoSettings->tcpUrl()->rawValue().toString()));
-    else if (source == VideoSettings::videoSource3DRSolo)
-        settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:5600"));
-    else if (source == VideoSettings::videoSourceParrotDiscovery)
-        settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:8888"));
+    if(videoSettingNumber == 1){
+      QString source = _video1Settings->videoSource()->rawValue().toString();
+      if (source == Video1Settings::videoSourceUDPH264)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(_video1Settings->udpPort()->rawValue().toInt()));
+      else if (source == Video1Settings::videoSourceUDPH265)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp265://0.0.0.0:%1").arg(_video1Settings->udpPort()->rawValue().toInt()));
+      else if (source == Video1Settings::videoSourceMPEGTS)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("mpegts://0.0.0.0:%1").arg(_video1Settings->udpPort()->rawValue().toInt()));
+      else if (source == Video1Settings::videoSourceRTSP)
+         settingsChanged |= _updateVideoUri(0, _video1Settings->rtspUrl()->rawValue().toString());
+      else if (source == Video1Settings::videoSourceTCP)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("tcp://%1").arg(_video1Settings->tcpUrl()->rawValue().toString()));
+      else if (source == Video1Settings::videoSource3DRSolo)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:5600"));
+      else if (source == Video1Settings::videoSourceParrotDiscovery)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:8888"));
+    }else{ // 2
+      QString source = _video2Settings->videoSource()->rawValue().toString();
+      if (source == Video2Settings::videoSourceUDPH264)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:%1").arg(_video2Settings->udpPort()->rawValue().toInt()));
+      else if (source == Video2Settings::videoSourceUDPH265)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp265://0.0.0.0:%1").arg(_video2Settings->udpPort()->rawValue().toInt()));
+      else if (source == Video2Settings::videoSourceMPEGTS)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("mpegts://0.0.0.0:%1").arg(_video2Settings->udpPort()->rawValue().toInt()));
+      else if (source == Video2Settings::videoSourceRTSP)
+         settingsChanged |= _updateVideoUri(0, _video2Settings->rtspUrl()->rawValue().toString());
+      else if (source == Video2Settings::videoSourceTCP)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("tcp://%1").arg(_video1Settings->tcpUrl()->rawValue().toString()));
+      else if (source == Video2Settings::videoSource3DRSolo)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:5600"));
+      else if (source == Video2Settings::videoSourceParrotDiscovery)
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:8888"));
+    }
 
     return settingsChanged;
 }
@@ -898,7 +1002,10 @@ void
 VideoManager::_startReceiver(unsigned id)
 {
 #if defined(QGC_GST_STREAMING)
-    const unsigned timeout = _videoSettings->rtspTimeout()->rawValue().toUInt();
+    unsigned timeout;
+    
+    if(videoSettingNumber == 2) timeout = _video1Settings->rtspTimeout()->rawValue().toUInt();
+    else timeout = _video2Settings->rtspTimeout()->rawValue().toUInt();
 
     if (id > 1) {
         qCDebug(VideoManagerLog) << "Unsupported receiver id" << id;

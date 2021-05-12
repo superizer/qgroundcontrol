@@ -15,7 +15,7 @@ import QGroundControl.Controllers   1.0
 
 Item {
     id:         _root
-    visible:    QGroundControl.videoManager.hasVideo
+    visible:    QGroundControl.video1Manager.hasVideo
 
     property Item pipState: videoPipState
     QGCPipState {
@@ -24,18 +24,18 @@ Item {
         isDark:     true
 
         onWindowAboutToOpen: {
-            QGroundControl.videoManager.stopVideo()
+            QGroundControl.video1Manager.stopVideo()
             videoStartDelay.start()
         }
 
         onWindowAboutToClose: {
-            QGroundControl.videoManager.stopVideo()
+            QGroundControl.video1Manager.stopVideo()
             videoStartDelay.start()
         }
 
         onStateChanged: {
             if (pipState.state !== pipState.fullState) {
-                QGroundControl.videoManager.fullScreen = false
+                QGroundControl.video1Manager.fullScreen = false
             }
         }
     }
@@ -45,7 +45,7 @@ Item {
         interval:     2000;
         running:      false
         repeat:       false
-        onTriggered:  QGroundControl.videoManager.startVideo()
+        onTriggered:  QGroundControl.video1Manager.startVideo()
     }
 
     //-- Video Streaming
@@ -53,20 +53,20 @@ Item {
         id:             videoStreaming
         anchors.fill:   parent
         useSmallFont:   _root.pipState.state !== _root.pipState.fullState
-        visible:        QGroundControl.videoManager.isGStreamer
+        visible:        QGroundControl.video1Manager.isGStreamer
     }
     //-- UVC Video (USB Camera or Video Device)
     Loader {
         id:             cameraLoader
         anchors.fill:   parent
-        visible:        !QGroundControl.videoManager.isGStreamer
-        source:         visible ? (QGroundControl.videoManager.uvcEnabled ? "qrc:/qml/FlightDisplayViewUVC.qml" : "qrc:/qml/FlightDisplayViewDummy.qml") : ""
+        visible:        !QGroundControl.video1Manager.isGStreamer
+        source:         visible ? (QGroundControl.video1Manager.uvcEnabled ? "qrc:/qml/FlightDisplayViewUVC.qml" : "qrc:/qml/FlightDisplayViewDummy.qml") : ""
     }
 
     MouseArea {
         anchors.fill:       parent
         enabled:            pipState.state === pipState.fullState
-        onDoubleClicked:    QGroundControl.videoManager.fullScreen = !QGroundControl.videoManager.fullScreen
+        onDoubleClicked:    QGroundControl.video1Manager.fullScreen = !QGroundControl.video1Manager.fullScreen
     }
 
     ProximityRadarVideoView{

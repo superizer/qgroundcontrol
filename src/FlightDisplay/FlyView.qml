@@ -83,7 +83,7 @@ Item {
         z:                      _fullItemZorder + 1
         parentToolInsets:       _toolInsets
         mapControl:             _mapControl
-        visible:                !QGroundControl.videoManager.fullScreen
+        visible:                !QGroundControl.video1Manager.fullScreen
     }
 
     FlyViewCustomLayer {
@@ -92,7 +92,7 @@ Item {
         z:                  _fullItemZorder + 2
         parentToolInsets:   widgetLayer.totalToolInsets
         mapControl:         _mapControl
-        visible:            !QGroundControl.videoManager.fullScreen
+        visible:            !QGroundControl.video1Manager.fullScreen
     }
 
     GuidedActionsController {
@@ -155,10 +155,10 @@ Item {
         anchors.margins:        _toolsMargin
         item1IsFullSettingsKey: "MainFlyWindowIsMap"
         item1:                  mapControl
-        item2:                  QGroundControl.videoManager.hasVideo ? videoControl : null
+        item2:                  QGroundControl.video1Manager.hasVideo ? videoControl : null
         fullZOrder:             _fullItemZorder
         pipZOrder:              _pipItemZorder
-        show:                   !QGroundControl.videoManager.fullScreen &&
+        show:                   !QGroundControl.video1Manager.fullScreen &&
                                     (videoControl.pipState.state === videoControl.pipState.pipState || mapControl.pipState.state === mapControl.pipState.pipState)
     }
 }

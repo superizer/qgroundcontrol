@@ -386,8 +386,11 @@ QGCCameraControl::takePhoto()
             _setPhotoStatus(PHOTO_CAPTURE_IN_PROGRESS);
             _captureInfoRetries = 0;
             //-- Capture local image as well
-            if(qgcApp()->toolbox()->videoManager1()) {
-                qgcApp()->toolbox()->videoManager1()->grabImage();
+            if(qgcApp()->toolbox()->video1Manager()) {
+                qgcApp()->toolbox()->video1Manager()->grabImage();
+            }
+            if(qgcApp()->toolbox()->video2Manager()) {
+                qgcApp()->toolbox()->video2Manager()->grabImage();
             }
             return true;
         }
@@ -1557,11 +1560,20 @@ QGCCameraControl::handleCaptureStatus(const mavlink_camera_capture_status_t& cap
     //-- Time Lapse
     if(photoStatus() == PHOTO_CAPTURE_INTERVAL_IDLE || photoStatus() == PHOTO_CAPTURE_INTERVAL_IN_PROGRESS) {
         //-- Capture local image as well
-        if(qgcApp()->toolbox()->videoManager1()) {
+        if(qgcApp()->toolbox()->video1Manager()) {
             QString photoPath = qgcApp()->toolbox()->settingsManager()->appSettings()->savePath()->rawValue().toString() + QStringLiteral("/Photo");
             QDir().mkpath(photoPath);
             photoPath += + "/" + QDateTime::currentDateTime().toString("yyyy-MM-dd_hh.mm.ss.zzz") + ".jpg";
-            qgcApp()->toolbox()->videoManager1()->grabImage(photoPath);
+            qgcApp()->toolbox()->video1Manager()->grabImage(photoPath);
+        }
+    }
+    if(photoStatus() == PHOTO_CAPTURE_INTERVAL_IDLE || photoStatus() == PHOTO_CAPTURE_INTERVAL_IN_PROGRESS) {
+        //-- Capture local image as well
+        if(qgcApp()->toolbox()->video2Manager()) {
+            QString photoPath = qgcApp()->toolbox()->settingsManager()->appSettings()->savePath()->rawValue().toString() + QStringLiteral("/Photo");
+            QDir().mkpath(photoPath);
+            photoPath += + "/" + QDateTime::currentDateTime().toString("yyyy-MM-dd_hh.mm.ss.zzz") + ".jpg";
+            qgcApp()->toolbox()->video2Manager()->grabImage(photoPath);
         }
     }
 }
@@ -2060,7 +2072,16 @@ QGCCameraControl::_checkForVideoStreams()
 {
     if(_info.flags & CAMERA_CAP_FLAGS_HAS_VIDEO_STREAM) {
         //-- Skip it if using Taisync as it has its own video settings
-        if(!qgcApp()->toolbox()->videoManager1()->isTaisync()) {
+        if(!qgcApp()->toolbox()->video1Manager()->isTaisync()) {
+            connect(&_streamInfoTimer, &QTimer::timeout, this, &QGCCameraControl::_streamTimeout);
+            _streamInfoTimer.setSingleShot(false);
+            connect(&_streamStatusTimer, &QTimer::timeout, this, &QGCCameraControl::_streamStatusTimeout);
+            _streamStatusTimer.setSingleShot(true);
+            //-- Request all streams
+            _requestStreamInfo(0);
+            _streamInfoTimer.start(2000);
+        }
+        if(!qgcApp()->toolbox()->video2Manager()->isTaisync()) {
             connect(&_streamInfoTimer, &QTimer::timeout, this, &QGCCameraControl::_streamTimeout);
             _streamInfoTimer.setSingleShot(false);
             connect(&_streamStatusTimer, &QTimer::timeout, this, &QGCCameraControl::_streamStatusTimeout);

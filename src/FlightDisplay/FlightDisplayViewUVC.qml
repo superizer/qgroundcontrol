@@ -32,7 +32,7 @@ Rectangle {
 
     Camera {
         id:             camera
-        deviceId:       QGroundControl.videoManager.videoSourceID
+        deviceId:       QGroundControl.video1Manager.videoSourceID
         captureMode:    Camera.CaptureViewfinder
         onDeviceIdChanged: {
             adjustAspectRatio()
@@ -47,7 +47,7 @@ Rectangle {
         source:         camera
         anchors.fill:   parent
         fillMode:       VideoOutput.PreserveAspectCrop
-        visible:        !QGroundControl.videoManager.isGStreamer
+        visible:        !QGroundControl.video1Manager.isGStreamer
     }
     onVisibleChanged: {
         if(visible)

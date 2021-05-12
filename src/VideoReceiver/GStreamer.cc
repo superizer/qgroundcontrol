@@ -107,7 +107,7 @@ static void qgcputenv(const QString& key, const QString& root, const QString& pa
 #endif
 
 void
-GStreamer::blacklist(VideoSettings::VideoDecoderOptions option)
+GStreamer::blacklist(Video1Settings::VideoDecoderOptions option)
 {
     GstRegistry* registry = gst_registry_get();
 
@@ -133,27 +133,82 @@ GStreamer::blacklist(VideoSettings::VideoDecoderOptions option)
     changeRank("bcmdec", GST_RANK_NONE);
 
     switch (option) {
-        case VideoSettings::ForceVideoDecoderDefault:
+        case Video1Settings::ForceVideoDecoderDefault:
             break;
-        case VideoSettings::ForceVideoDecoderSoftware:
+        case Video1Settings::ForceVideoDecoderSoftware:
             changeRank("avdec_h264", GST_RANK_PRIMARY + 1);
             break;
-        case VideoSettings::ForceVideoDecoderVAAPI:
+        case Video1Settings::ForceVideoDecoderVAAPI:
             for(auto name : {"vaapimpeg2dec", "vaapimpeg4dec", "vaapih263dec", "vaapih264dec", "vaapivc1dec"}) {
                 changeRank(name, GST_RANK_PRIMARY + 1);
             }
             break;
-        case VideoSettings::ForceVideoDecoderNVIDIA:
+        case Video1Settings::ForceVideoDecoderNVIDIA:
             for(auto name : {"nvh265dec", "nvh265sldec", "nvh264dec", "nvh264sldec"}) {
                 changeRank(name, GST_RANK_PRIMARY + 1);
             }
             break;
-        case VideoSettings::ForceVideoDecoderDirectX3D:
+        case Video1Settings::ForceVideoDecoderDirectX3D:
             for(auto name : {"d3d11vp9dec", "d3d11h265dec", "d3d11h264dec"}) {
                 changeRank(name, GST_RANK_PRIMARY + 1);
             }
             break;
-        case VideoSettings::ForceVideoDecoderVideoToolbox:
+        case Video1Settings::ForceVideoDecoderVideoToolbox:
+            changeRank("vtdec", GST_RANK_PRIMARY + 1);
+            break;
+        default:
+            qCWarning(GStreamerLog) << "Can't handle decode option:" << option;
+    }
+}
+
+void
+GStreamer::blacklist(Video2Settings::VideoDecoderOptions option)
+{
+    GstRegistry* registry = gst_registry_get();
+
+    if (registry == nullptr) {
+        qCCritical(GStreamerLog) << "Failed to get gstreamer registry.";
+        return;
+    }
+
+    auto changeRank = [registry](const char* featureName, uint16_t rank) {
+        GstPluginFeature* feature = gst_registry_lookup_feature(registry, featureName);
+        if (feature == nullptr) {
+            qCDebug(GStreamerLog) << "Failed to change ranking of feature. Featuer does not exist:" << featureName;
+            return;
+        }
+
+        qCDebug(GStreamerLog) << "Changing feature (" << featureName << ") to use rank:" << rank;
+        gst_plugin_feature_set_rank(feature, rank);
+        gst_registry_add_feature(registry, feature);
+        gst_object_unref(feature);
+    };
+
+    // Set rank for specific features
+    changeRank("bcmdec", GST_RANK_NONE);
+
+    switch (option) {
+        case Video2Settings::ForceVideoDecoderDefault:
+            break;
+        case Video2Settings::ForceVideoDecoderSoftware:
+            changeRank("avdec_h264", GST_RANK_PRIMARY + 1);
+            break;
+        case Video2Settings::ForceVideoDecoderVAAPI:
+            for(auto name : {"vaapimpeg2dec", "vaapimpeg4dec", "vaapih263dec", "vaapih264dec", "vaapivc1dec"}) {
+                changeRank(name, GST_RANK_PRIMARY + 1);
+            }
+            break;
+        case Video2Settings::ForceVideoDecoderNVIDIA:
+            for(auto name : {"nvh265dec", "nvh265sldec", "nvh264dec", "nvh264sldec"}) {
+                changeRank(name, GST_RANK_PRIMARY + 1);
+            }
+            break;
+        case Video2Settings::ForceVideoDecoderDirectX3D:
+            for(auto name : {"d3d11vp9dec", "d3d11h265dec", "d3d11h264dec"}) {
+                changeRank(name, GST_RANK_PRIMARY + 1);
+            }
+            break;
+        case Video2Settings::ForceVideoDecoderVideoToolbox:
             changeRank("vtdec", GST_RANK_PRIMARY + 1);
             break;
         default:

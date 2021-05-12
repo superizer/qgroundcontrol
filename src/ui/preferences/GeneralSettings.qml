@@ -48,30 +48,30 @@ Rectangle {
     property var    _planViewSettings:          QGroundControl.settingsManager.planViewSettings
     property var    _flyViewSettings:           QGroundControl.settingsManager.flyViewSettings
     // Video Settings 1
-    property var    _videoSettings1:             QGroundControl.settingsManager.videoSettings1
+    property var    _videoSettings1:             QGroundControl.settingsManager.video1Settings
     property string _videoSource1:               _videoSettings1.videoSource.value
     // Video Setting 2
-    property var    _videoSettings2:             QGroundControl.settingsManager.videoSettings2
+    property var    _videoSettings2:             QGroundControl.settingsManager.video2Settings
     property string _videoSource2:               _videoSettings2.videoSource.value
 
     // Checking variables for Video Setting 1
-    property bool   _isGst_1:                   QGroundControl.videoManager1.isGStreamer
-    property bool   _isUDP264_1:                _isGst && _videoSource1 === _videoSettings1.udp264VideoSource
-    property bool   _isUDP265_1:                _isGst && _videoSource1 === _videoSettings1.udp265VideoSource
-    property bool   _isRTSP_1:                  _isGst && _videoSource1 === _videoSettings1.rtspVideoSource
-    property bool   _isTCP_1:                   _isGst && _videoSource1 === _videoSettings1.tcpVideoSource
-    property bool   _isMPEGTS_1:                _isGst && _videoSource1 === _videoSettings1.mpegtsVideoSource
-    property bool   _videoAutoStreamConfig_1:   QGroundControl.videoManager1.autoStreamConfigured
+    property bool   _isGst_1:                   QGroundControl.video1Manager.isGStreamer
+    property bool   _isUDP264_1:                _isGst_1 && _videoSource1 === _videoSettings1.udp264VideoSource
+    property bool   _isUDP265_1:                _isGst_1 && _videoSource1 === _videoSettings1.udp265VideoSource
+    property bool   _isRTSP_1:                  _isGst_1 && _videoSource1 === _videoSettings1.rtspVideoSource
+    property bool   _isTCP_1:                   _isGst_1 && _videoSource1 === _videoSettings1.tcpVideoSource
+    property bool   _isMPEGTS_1:                _isGst_1 && _videoSource1 === _videoSettings1.mpegtsVideoSource
+    property bool   _videoAutoStreamConfig_1:   QGroundControl.video1Manager.autoStreamConfigured
     property bool   _showSaveVideoSettings_1:   _isGst_1 || _videoAutoStreamConfig_1
 
     // Checking variables for Video Setting 2
-    property bool   _isGst_2:                   QGroundControl.videoManager2.isGStreamer
-    property bool   _isUDP264_2:                _isGst && _videoSource2 === _videoSettings2.udp264VideoSource
-    property bool   _isUDP265_2:                _isGst && _videoSource2 === _videoSettings2.udp265VideoSource
-    property bool   _isRTSP_2:                  _isGst && _videoSource2 === _videoSettings2.rtspVideoSource
-    property bool   _isTCP_2:                   _isGst && _videoSource2 === _videoSettings2.tcpVideoSource
-    property bool   _isMPEGTS_2:                _isGst && _videoSource2 === _videoSettings2.mpegtsVideoSource
-    property bool   _videoAutoStreamConfig_2:   QGroundControl.videoManager2.autoStreamConfigured
+    property bool   _isGst_2:                   QGroundControl.video2Manager.isGStreamer
+    property bool   _isUDP264_2:                _isGst_2 && _videoSource2 === _videoSettings2.udp264VideoSource
+    property bool   _isUDP265_2:                _isGst_2 && _videoSource2 === _videoSettings2.udp265VideoSource
+    property bool   _isRTSP_2:                  _isGst_2 && _videoSource2 === _videoSettings2.rtspVideoSource
+    property bool   _isTCP_2:                   _isGst_2 && _videoSource2 === _videoSettings2.tcpVideoSource
+    property bool   _isMPEGTS_2:                _isGst_2 && _videoSource2 === _videoSettings2.mpegtsVideoSource
+    property bool   _videoAutoStreamConfig_2:   QGroundControl.video2Manager.autoStreamConfigured
     property bool   _showSaveVideoSettings_2:   _isGst_2 || _videoAutoStreamConfig_2
 
     property bool   _disableAllDataPersistence: QGroundControl.settingsManager.appSettings.disableAllPersistence.rawValue
@@ -387,7 +387,7 @@ Rectangle {
                                     id:                     videoSource2
                                     Layout.preferredWidth:  _comboFieldWidth
                                     indexModel:             false
-                                    fact:                   _videoSettings1.videoSource
+                                    fact:                   _videoSettings2.videoSource
                                     visible:                videoSourceLabel2.visible
                                 }
 

@@ -623,7 +623,9 @@ bool QGCApplication::_initForNormalAppBoot()
     QQuickWindow* rootWindow = (QQuickWindow*)qgcApp()->mainRootWindow();
 
     if (rootWindow) {
-        rootWindow->scheduleRenderJob (new FinishVideoInitialization (toolbox()->videoManager1()),
+        rootWindow->scheduleRenderJob (new FinishVideoInitialization (toolbox()->video1Manager()),
+                QQuickWindow::BeforeSynchronizingStage);
+        rootWindow->scheduleRenderJob (new FinishVideoInitialization (toolbox()->video2Manager()),
                 QQuickWindow::BeforeSynchronizingStage);
     }
 

@@ -72,8 +72,8 @@ QGCToolbox::QGCToolbox(QGCApplication* app)
     _uasMessageHandler      = new UASMessageHandler         (app, this);
     _qgcPositionManager     = new QGCPositionManager        (app, this);
     _followMe               = new FollowMe                  (app, this);
-    _videoManager1          = new VideoManager              (app, this);
-    _videoManager2          = new VideoManager              (app, this);
+    _video1Manager          = new VideoManager              (app, this);
+    _video2Manager          = new VideoManager              (app, this);
     _mavlinkLogManager      = new MAVLinkLogManager         (app, this);
     _adsbVehicleManager     = new ADSBVehicleManager        (app, this);
 #if defined(QGC_ENABLE_PAIRING)
@@ -88,7 +88,8 @@ QGCToolbox::QGCToolbox(QGCApplication* app)
     _airspaceManager        = new AirspaceManager           (app, this);
 #endif
 #if defined(QGC_GST_TAISYNC_ENABLED)
-    _taisyncManager         = new TaisyncManager            (app, this);
+    _taisync1Manager        = new TaisyncManager            (app, this);
+    _taisync2Manager        = new TaisyncManager            (app, this);
 #endif
 #if defined(QGC_GST_MICROHARD_ENABLED)
     _microhardManager       = new MicrohardManager          (app, this);
@@ -117,13 +118,14 @@ void QGCToolbox::setChildToolboxes(void)
     _uasMessageHandler->setToolbox(this);
     _followMe->setToolbox(this);
     _qgcPositionManager->setToolbox(this);
-    _videoManager1->setToolboxMod(this, 1);
-    _videoManager2->setToolboxMod(this, 2);
+    _video1Manager->setToolboxMod(this, 1);
+    _video2Manager->setToolboxMod(this, 2);
     _mavlinkLogManager->setToolbox(this);
     _airspaceManager->setToolbox(this);
     _adsbVehicleManager->setToolbox(this);
 #if defined(QGC_GST_TAISYNC_ENABLED)
-    _taisyncManager->setToolbox(this);
+    _taisync1Manager->setToolbox(this, 1);
+    _taisync2Manager->setToolbox(this, 2);
 #endif
 #if defined(QGC_GST_MICROHARD_ENABLED)
     _microhardManager->setToolbox(this);

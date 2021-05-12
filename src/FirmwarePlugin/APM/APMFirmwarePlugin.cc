@@ -450,7 +450,7 @@ void APMFirmwarePlugin::initializeVehicle(Vehicle* vehicle)
         }
     }
 
-    if (qgcApp()->toolbox()->settingsManager()->videoSettings1()->videoSource()->rawValue() == VideoSettings::videoSource3DRSolo) {
+    if (qgcApp()->toolbox()->settingsManager()->video1Settings()->videoSource()->rawValue() == Video1Settings::videoSource3DRSolo) {
         _soloVideoHandshake();
     }
 }

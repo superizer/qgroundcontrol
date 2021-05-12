@@ -330,6 +330,8 @@
         <file alias="Vehicle/VibrationFact.json">src/Vehicle/VibrationFact.json</file>
         <file alias="Vehicle/WindFact.json">src/Vehicle/WindFact.json</file>
         <file alias="Video.SettingsGroup.json">src/Settings/Video.SettingsGroup.json</file>
+        <file alias="Video1.SettingsGroup.json">src/Settings/Video1.SettingsGroup.json</file>
+        <file alias="Video2.SettingsGroup.json">src/Settings/Video2.SettingsGroup.json</file>
         <file alias="VTOLLandingPattern.FactMetaData.json">src/MissionManager/VTOLLandingPattern.FactMetaData.json</file>
     </qresource>
     <qresource prefix="/MockLink">

@@ -17,7 +17,8 @@
 #include "AppSettings.h"
 #include "UnitsSettings.h"
 #include "AutoConnectSettings.h"
-#include "VideoSettings.h"
+#include "Video1Settings.h"
+#include "Video2Settings.h"
 #include "FlightMapSettings.h"
 #include "RTKSettings.h"
 #include "FlyViewSettings.h"
@@ -46,7 +47,8 @@ public:
     Q_PROPERTY(QObject* appSettings                     READ appSettings                    CONSTANT)
     Q_PROPERTY(QObject* unitsSettings                   READ unitsSettings                  CONSTANT)
     Q_PROPERTY(QObject* autoConnectSettings             READ autoConnectSettings            CONSTANT)
-    Q_PROPERTY(QObject* videoSettings                   READ videoSettings                  CONSTANT)
+    Q_PROPERTY(QObject* video1Settings                  READ video1Settings                 CONSTANT)
+    Q_PROPERTY(QObject* video2Settings                  READ video2Settings                  CONSTANT)
     Q_PROPERTY(QObject* flightMapSettings               READ flightMapSettings              CONSTANT)
     Q_PROPERTY(QObject* rtkSettings                     READ rtkSettings                    CONSTANT)
     Q_PROPERTY(QObject* flyViewSettings                 READ flyViewSettings                CONSTANT)
@@ -67,8 +69,8 @@ public:
     AppSettings*                    appSettings                 (void) { return _appSettings; }
     UnitsSettings*                  unitsSettings               (void) { return _unitsSettings; }
     AutoConnectSettings*            autoConnectSettings         (void) { return _autoConnectSettings; }
-    VideoSettings*                  videoSettings1              (void) { return _videoSettings1; }
-    VideoSettings*                  videoSettings2              (void) { return _videoSettings2; }
+    Video1Settings*                 video1Settings              (void) { return _video1Settings; }
+    Video2Settings*                 video2Settings              (void) { return _video2Settings; }
     FlightMapSettings*              flightMapSettings           (void) { return _flightMapSettings; }
     RTKSettings*                    rtkSettings                 (void) { return _rtkSettings; }
     FlyViewSettings*                flyViewSettings             (void) { return _flyViewSettings; }
@@ -87,8 +89,8 @@ private:
     AppSettings*                    _appSettings;
     UnitsSettings*                  _unitsSettings;
     AutoConnectSettings*            _autoConnectSettings;
-    VideoSettings*                  _videoSettings1;
-    VideoSettings*                  _videoSettings2;
+    Video1Settings*                 _video1Settings;
+    Video2Settings*                 _video2Settings;
     FlightMapSettings*              _flightMapSettings;
     RTKSettings*                    _rtkSettings;
     FlyViewSettings*                _flyViewSettings;

@@ -26,15 +26,15 @@ Item {
 
     property bool useSmallFont: true
 
-    property double _ar:                QGroundControl.videoManager.aspectRatio
-    property bool   _showGrid:          QGroundControl.settingsManager.videoSettings.gridLines.rawValue > 0
+    property double _ar:                QGroundControl.video1Manager.aspectRatio
+    property bool   _showGrid:          QGroundControl.settingsManager.video1Settings.gridLines.rawValue > 0
     property var    _dynamicCameras:    globals.activeVehicle ? globals.activeVehicle.cameraManager : null
     property bool   _connected:         globals.activeVehicle ? !globals.activeVehicle.communicationLost : false
     property int    _curCameraIndex:    _dynamicCameras ? _dynamicCameras.currentCamera : 0
     property bool   _isCamera:          _dynamicCameras ? _dynamicCameras.cameras.count > 0 : false
     property var    _camera:            _isCamera ? _dynamicCameras.cameras.get(_curCameraIndex) : null
     property bool   _hasZoom:           _camera && _camera.hasZoom
-    property int    _fitMode:           QGroundControl.settingsManager.videoSettings.videoFit.rawValue
+    property int    _fitMode:           QGroundControl.settingsManager.video1Settings.videoFit.rawValue
 
     property double _thermalHeightFactor: 0.85 //-- TODO
 
@@ -42,9 +42,9 @@ Item {
         id:             noVideo
         anchors.fill:   parent
         color:          Qt.rgba(0,0,0,0.75)
-        visible:        !(QGroundControl.videoManager.decoding)
+        visible:        !(QGroundControl.video1Manager.decoding)
         QGCLabel {
-            text:               QGroundControl.settingsManager.videoSettings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
+            text:               QGroundControl.settingsManager.video1Settings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
             font.family:        ScreenTools.demiboldFontFamily
             color:              "white"
             font.pointSize:     useSmallFont ? ScreenTools.smallFontPointSize : ScreenTools.largeFontPointSize
@@ -54,7 +54,7 @@ Item {
     Rectangle {
         anchors.fill:   parent
         color:          "black"
-        visible:        QGroundControl.videoManager.decoding
+        visible:        QGroundControl.video1Manager.decoding
         function getWidth() {
             //-- Fit Width or Stretch
             if(_fitMode === 0 || _fitMode === 2) {
@@ -78,10 +78,10 @@ Item {
                 objectName:     "videoContent"
 
                 Connections {
-                    target: QGroundControl.videoManager
+                    target: QGroundControl.video1Manager
                     onImageFileChanged: {
                         videoContent.grabToImage(function(result) {
-                            if (!result.saveToFile(QGroundControl.videoManager.imageFile)) {
+                            if (!result.saveToFile(QGroundControl.vide1Manager.imageFile)) {
                                 console.error('Error capturing video frame');
                             }
                         });
@@ -92,28 +92,28 @@ Item {
                     height: parent.height
                     width:  1
                     x:      parent.width * 0.33
-                    visible: _showGrid && !QGroundControl.videoManager.fullScreen
+                    visible: _showGrid && !QGroundControl.video1Manager.fullScreen
                 }
                 Rectangle {
                     color:  Qt.rgba(1,1,1,0.5)
                     height: parent.height
                     width:  1
                     x:      parent.width * 0.66
-                    visible: _showGrid && !QGroundControl.videoManager.fullScreen
+                    visible: _showGrid && !QGroundControl.video1Manager.fullScreen
                 }
                 Rectangle {
                     color:  Qt.rgba(1,1,1,0.5)
                     width:  parent.width
                     height: 1
                     y:      parent.height * 0.33
-                    visible: _showGrid && !QGroundControl.videoManager.fullScreen
+                    visible: _showGrid && !QGroundControl.video1Manager.fullScreen
                 }
                 Rectangle {
                     color:  Qt.rgba(1,1,1,0.5)
                     width:  parent.width
                     height: 1
                     y:      parent.height * 0.66
-                    visible: _showGrid && !QGroundControl.videoManager.fullScreen
+                    visible: _showGrid && !QGroundControl.video1Manager.fullScreen
                 }
             }
         }
@@ -125,19 +125,19 @@ Item {
             height:             parent.getHeight()
             width:              parent.getWidth()
             anchors.centerIn:   parent
-            visible:            QGroundControl.videoManager.decoding
+            visible:            QGroundControl.video1Manager.decoding
             sourceComponent:    videoBackgroundComponent
 
-            property bool videoDisabled: QGroundControl.settingsManager.videoSettings.videoSource.rawValue === QGroundControl.settingsManager.videoSettings.disabledVideoSource
+            property bool videoDisabled: QGroundControl.settingsManager.video1Settings.videoSource.rawValue === QGroundControl.settingsManager.video1Settings.disabledVideoSource
         }
 
         //-- Thermal Image
         Item {
             id:                 thermalItem
-            width:              height * QGroundControl.videoManager.thermalAspectRatio
+            width:              height * QGroundControl.video1Manager.thermalAspectRatio
             height:             _camera ? (_camera.thermalMode === QGCCameraControl.THERMAL_FULL ? parent.height : (_camera.thermalMode === QGCCameraControl.THERMAL_PIP ? ScreenTools.defaultFontPixelHeight * 12 : parent.height * _thermalHeightFactor)) : 0
             anchors.centerIn:   parent
-            visible:            QGroundControl.videoManager.hasThermal && _camera.thermalMode !== QGCCameraControl.THERMAL_OFF
+            visible:            QGroundControl.video1Manager.hasThermal && _camera.thermalMode !== QGCCameraControl.THERMAL_OFF
             function pipOrNot() {
                 if(_camera) {
                     if(_camera.thermalMode === QGCCameraControl.THERMAL_PIP) {
@@ -166,7 +166,7 @@ Item {
                 id:             thermalVideo
                 objectName:     "thermalVideo"
                 anchors.fill:   parent
-                receiver:       QGroundControl.videoManager.thermalVideoReceiver
+                receiver:       QGroundControl.video1Manager.thermalVideoReceiver
                 opacity:        _camera ? (_camera.thermalMode === QGCCameraControl.THERMAL_BLEND ? _camera.thermalOpacity / 100 : 1.0) : 0
             }
         }

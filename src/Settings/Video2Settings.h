@@ -12,7 +12,7 @@
 
 #include "SettingsGroup.h"
 
-class VideoSettings2 : public SettingsGroup
+class Video2Settings : public SettingsGroup
 {
     Q_OBJECT
 

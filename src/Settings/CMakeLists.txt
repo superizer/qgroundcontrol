@@ -28,8 +28,10 @@ add_library(Settings
 	SettingsManager.h
 	UnitsSettings.cc
 	UnitsSettings.h
-	VideoSettings.cc
-	VideoSettings.h
+	Video1Settings.cc
+	Video1Settings.h
+   Video2Settings.cc
+	Video2Settings.h
 )
 
 target_link_libraries(Settings

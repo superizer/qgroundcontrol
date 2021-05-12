@@ -40,8 +40,8 @@ Rectangle {
 
     // The following properties relate to a simple video stream
     property bool   _videoStreamAvailable:                      _videoStreamManager.hasVideo
-    property var    _videoStreamSettings:                       QGroundControl.settingsManager.videoSettings
-    property var    _videoStreamManager:                        QGroundControl.videoManager
+    property var    _videoStreamSettings:                       QGroundControl.settingsManager.video1Settings
+    property var    _videoStreamManager:                        QGroundControl.video1Manager
     property bool   _videoStreamAllowsPhotoWhileRecording:      true
     property bool   _videoStreamIsStreaming:                    _videoStreamManager.streaming
     property bool   _simplePhotoCaptureIsIdle:             true

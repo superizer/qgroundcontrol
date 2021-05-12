@@ -38,4 +38,5 @@ protected slots:
 private:
     bool    _request                    (const QString& request);
     bool    _post                       (const QString& post, const QString& postPayload);
+    int     videoSettingNumber          = 0;
 };

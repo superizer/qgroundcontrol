@@ -91,8 +91,14 @@ TaisyncManager::_reset()
     emit linkConnectedChanged();
     if(!_appSettings) {
         _appSettings = _toolbox->settingsManager()->appSettings();
-        connect(_appSettings->enableTaisync(),      &Fact::rawValueChanged, this, &TaisyncManager::_setEnabled);
-        connect(_appSettings->enableTaisyncVideo(), &Fact::rawValueChanged, this, &TaisyncManager::_setVideoEnabled);
+        if(videoSettingNumber == 1){
+           connect(_appSettings->enableTaisync1(),      &Fact::rawValueChanged, this, &TaisyncManager::_setEnabled);
+           connect(_appSettings->enableTaisyncVideo1(), &Fact::rawValueChanged, this, &TaisyncManager::_setVideoEnabled);
+        }else{ // 2
+           connect(_appSettings->enableTaisync2(),      &Fact::rawValueChanged, this, &TaisyncManager::_setEnabled);
+           connect(_appSettings->enableTaisyncVideo2(), &Fact::rawValueChanged, this, &TaisyncManager::_setVideoEnabled);
+        }
+        
     }
     _setEnabled();
 }
@@ -118,8 +124,9 @@ TaisyncManager::_createMetadata(const char* name, QStringList enums)
 
 //-----------------------------------------------------------------------------
 void
-TaisyncManager::setToolbox(QGCToolbox* toolbox)
+TaisyncManager::setToolbox(QGCToolbox* toolbox, int _videoSettingNumber)
 {
+    videoSettingNumber = _videoSettingNumber
     QGCTool::setToolbox(toolbox);
     {
         //-- Radio Mode
@@ -282,7 +289,13 @@ TaisyncManager::_videoSettingsChanged(QVariant)
 void
 TaisyncManager::_setEnabled()
 {
-    bool enable = _appSettings->enableTaisync()->rawValue().toBool();
+    bool enable;
+    if(videoSettingNumber == 1){
+       enable = _appSettings->enableTaisync1()->rawValue().toBool();
+    }else{ // 2
+       enable = _appSettings->enableTaisync2()->rawValue().toBool();
+    }
+     
     if(enable) {
         if(!_taiSettings) {
             _taiSettings = new TaisyncSettings(this);
@@ -320,7 +333,12 @@ TaisyncManager::_restoreVideoSettings(Fact* setting)
 {
     auto* pFact = qobject_cast<SettingsFact*>(setting);
     if(pFact) {
-        pFact->setVisible(qgcApp()->toolbox()->corePlugin()->adjustSettingMetaData(VideoSettings::settingsGroup, *setting->metaData()));
+        if(videoSettingNumber == 1){
+           pFact->setVisible(qgcApp()->toolbox()->corePlugin()->adjustSettingMetaData(Video1Settings::settingsGroup, *setting->metaData()));
+        }else{ // 2
+           pFact->setVisible(qgcApp()->toolbox()->corePlugin()->adjustSettingMetaData(Video2Settings::settingsGroup, *setting->metaData()));
+        }
+        
     }
 }
 
@@ -329,19 +347,41 @@ void
 TaisyncManager::_setVideoEnabled()
 {
     //-- Check both if video is enabled and Taisync support itself is enabled as well.
-    bool enable = _appSettings->enableTaisyncVideo()->rawValue().toBool() && _appSettings->enableTaisync()->rawValue().toBool();
+    bool enable;
+
+    if(videoSettingNumber == 1){
+       enable = _appSettings->enableTaisyncVideo1()->rawValue().toBool() && _appSettings->enableTaisync1()->rawValue().toBool();
+    }else{ // 2
+       enable = _appSettings->enableTaisyncVideo2()->rawValue().toBool() && _appSettings->enableTaisync2()->rawValue().toBool();
+    }
+    
     if(enable) {
-        //-- Set it up the way we need it do be.
-        VideoSettings* pVSettings = qgcApp()->toolbox()->settingsManager()->videoSettings();
-        pVSettings->setVisible(false);
-        pVSettings->udpPort()->setRawValue(5600);
-        //-- TODO: this AR must come from somewhere
-        pVSettings->aspectRatio()->setRawValue(1024.0 / 768.0);
-        pVSettings->videoSource()->setRawValue(QString(VideoSettings::videoSourceUDPH264));
+        if(videoSettingNumber == 1){
+            //-- Set it up the way we need it do be.
+            Video1Settings* pVSettings = qgcApp()->toolbox()->settingsManager()->video1Settings();
+            pVSettings->setVisible(false);
+            pVSettings->udpPort()->setRawValue(5600);
+            //-- TODO: this AR must come from somewhere
+            pVSettings->aspectRatio()->setRawValue(1024.0 / 768.0);
+            pVSettings->videoSource()->setRawValue(QString(Video1Settings::videoSourceUDPH264));
+        }else{ // 2
+            //-- Set it up the way we need it do be.
+            Video2Settings* pVSettings = qgcApp()->toolbox()->settingsManager()->video2Settings();
+            pVSettings->setVisible(false);
+            pVSettings->udpPort()->setRawValue(5600);
+            //-- TODO: this AR must come from somewhere
+            pVSettings->aspectRatio()->setRawValue(1024.0 / 768.0);
+            pVSettings->videoSource()->setRawValue(QString(Video2Settings::videoSourceUDPH264));
+        }
+
 #if defined(__ios__) || defined(__android__)
         if(!_taiVideo) {
             //-- iOS and Android receive raw h.264 and need a different pipeline
-            qgcApp()->toolbox()->videoManager()->setIsTaisync(true);
+            if(videoSettingNumber == 1){
+               qgcApp()->toolbox()->video1Manager()->setIsTaisync(true);
+            }else{ // 2
+               qgcApp()->toolbox()->video2Manager()->setIsTaisync(true);
+            }
             _taiVideo = new TaisyncVideoReceiver(this);
             _taiVideo->start();
         }
@@ -349,18 +389,31 @@ TaisyncManager::_setVideoEnabled()
     } else {
         //-- Restore video settings.
 #if defined(__ios__) || defined(__android__)
-        qgcApp()->toolbox()->videoManager()->setIsTaisync(false);
+        if(videoSettingNumber == 1){
+           qgcApp()->toolbox()->video1Manager()->setIsTaisync(false);
+        }else{ // 2
+           qgcApp()->toolbox()->video2Manager()->setIsTaisync(false);
+        }
         if (_taiVideo) {
             _taiVideo->close();
             _taiVideo->deleteLater();
             _taiVideo = nullptr;
         }
 #endif
-        VideoSettings* pVSettings = qgcApp()->toolbox()->settingsManager()->videoSettings();
-        _restoreVideoSettings(pVSettings->videoSource());
-        _restoreVideoSettings(pVSettings->aspectRatio());
-        _restoreVideoSettings(pVSettings->udpPort());
-        pVSettings->setVisible(true);
+        if(videoSettingNumber == 1){
+            Video1Settings* pVSettings = qgcApp()->toolbox()->settingsManager()->video1Settings();
+            _restoreVideoSettings(pVSettings->videoSource());
+            _restoreVideoSettings(pVSettings->aspectRatio());
+            _restoreVideoSettings(pVSettings->udpPort());
+            pVSettings->setVisible(true);
+        }else{ // 2
+            Video2Settings* pVSettings = qgcApp()->toolbox()->settingsManager()->video2Settings();
+            _restoreVideoSettings(pVSettings->videoSource());
+            _restoreVideoSettings(pVSettings->aspectRatio());
+            _restoreVideoSettings(pVSettings->udpPort());
+            pVSettings->setVisible(true);
+        }
+
     }
     _enableVideo = enable;
 }

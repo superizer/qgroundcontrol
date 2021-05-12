@@ -56,7 +56,9 @@ public:
     explicit TaisyncManager                 (QGCApplication* app, QGCToolbox* toolbox);
     ~TaisyncManager                         () override;
 
-    void        setToolbox                      (QGCToolbox* toolbox) override;
+   //  void        setToolbox                      (QGCToolbox* toolbox) override;
+    void        setToolbox                      (QGCToolbox* toolbox, int _videoSettingNumber);
+    int         getVideoSettingNumber           () { return videoSettingNumber; }
 
     bool        connected                       () { return _isConnected; }
     bool        linkConnected                   () { return _linkConnected; }
@@ -126,12 +128,13 @@ private:
         REQ_ALL                 = 0xFFFFFFF,
     };
 
-    uint32_t                _reqMask        = static_cast<uint32_t>(REQ_ALL);
-    bool                    _running        = false;
-    bool                    _isConnected    = false;
-    AppSettings*            _appSettings    = nullptr;
-    TaisyncManager*         _taiManager     = nullptr;
-    TaisyncSettings*        _taiSettings    = nullptr;
+    uint32_t                _reqMask           = static_cast<uint32_t>(REQ_ALL);
+    bool                    _running           = false;
+    bool                    _isConnected       = false;
+    AppSettings*            _appSettings       = nullptr;
+    TaisyncManager*         _taiManager        = nullptr;
+    TaisyncSettings*        _taiSettings       = nullptr;
+    int                     videoSettingNumber = 0
 #if defined(__ios__) || defined(__android__)
     TaisyncTelemetry*       _taiTelemetery  = nullptr;
     TaisyncVideoReceiver*   _taiVideo       = nullptr;

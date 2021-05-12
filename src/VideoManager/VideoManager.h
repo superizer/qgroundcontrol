@@ -24,7 +24,8 @@
 
 Q_DECLARE_LOGGING_CATEGORY(VideoManagerLog)
 
-class VideoSettings;
+class Video1Settings;
+class Video2Settings;
 class Vehicle;
 class Joystick;
 
@@ -91,6 +92,9 @@ public:
     virtual VideoReceiver*  videoReceiver           () { return _videoReceiver[0]; }
     virtual VideoReceiver*  thermalVideoReceiver    () { return _videoReceiver[1]; }
 
+    int             getVideoSettingNumber   () { return videoSettingNumber; }
+    Video1Settings* video1Settings          () { return _video1Settings; }
+    Video2Settings* video2Settings          () { return _video2Settings; }
 #if defined(QGC_DISABLE_UVC)
     virtual bool        uvcEnabled          () { return false; }
 #else
@@ -102,7 +106,7 @@ public:
 
     // Override from QGCTool
     virtual void        setToolbox          (QGCToolbox *toolbox);
-    void                setToolboxMod       (QGCToolbox *toolbox, int settingNumber);
+    void                setToolboxMod       (QGCToolbox *toolbox, int _videoSettingNumber);
 
 
     Q_INVOKABLE void startVideo     ();
@@ -171,7 +175,10 @@ protected:
     QAtomicInteger<bool>    _decoding               = false;
     QAtomicInteger<bool>    _recording              = false;
     QAtomicInteger<quint32> _videoSize              = 0;
-    VideoSettings*          _videoSettings          = nullptr;
+    int                     videoSettingNumber      = 0;
+    Video1Settings*         _videoSettings          = nullptr;
+    Video1Settings*         _video1Settings         = nullptr;
+    Video2Settings*         _video2Settings         = nullptr;
     QString                 _videoSourceID;
     bool                    _fullScreen             = false;
     Vehicle*                _activeVehicle          = nullptr;

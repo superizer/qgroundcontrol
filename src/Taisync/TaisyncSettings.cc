@@ -29,6 +29,7 @@ static const char* kIPAddrURI   = "/v1/ipaddr.json";
 TaisyncSettings::TaisyncSettings(QObject* parent)
     : TaisyncHandler(parent)
 {
+    videoSettingNumber      = (dynamic_cast<TaisyncManager*>(parent))->getVideoSettingNumber();
 }
 
 //-----------------------------------------------------------------------------
@@ -38,7 +39,11 @@ bool TaisyncSettings::start()
 #if defined(__ios__) || defined(__android__)
     return _start(TAISYNC_SETTINGS_PORT);
 #else
-    return _start(TAISYNC_SETTINGS_PORT, QHostAddress(qgcApp()->toolbox()->taisyncManager()->remoteIPAddr()));
+    if(videoSettingNumber == 1){
+       return _start(TAISYNC_SETTINGS_PORT, QHostAddress(qgcApp()->toolbox()->taisync1Manager()->remoteIPAddr()));
+    }else{ // 2
+       return _start(TAISYNC_SETTINGS_PORT, QHostAddress(qgcApp()->toolbox()->taisync2Manager()->remoteIPAddr()));
+    }
 #endif
 }
 

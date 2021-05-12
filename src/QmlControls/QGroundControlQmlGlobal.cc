@@ -50,7 +50,8 @@ void QGroundControlQmlGlobal::setToolbox(QGCToolbox* toolbox)
     _mapEngineManager       = toolbox->mapEngineManager();
     _qgcPositionManager     = toolbox->qgcPositionManager();
     _missionCommandTree     = toolbox->missionCommandTree();
-    _videoManager           = toolbox->videoManager1();
+    _video1Manager          = toolbox->video1Manager();
+    _video2Manager          = toolbox->video2Manager();
     _mavlinkLogManager      = toolbox->mavlinkLogManager();
     _corePlugin             = toolbox->corePlugin();
     _firmwarePluginManager  = toolbox->firmwarePluginManager();
@@ -63,7 +64,8 @@ void QGroundControlQmlGlobal::setToolbox(QGCToolbox* toolbox)
     _pairingManager         = toolbox->pairingManager();
 #endif
 #if defined(QGC_GST_TAISYNC_ENABLED)
-    _taisyncManager         = toolbox->taisyncManager();
+    _taisync1Manager         = toolbox->taisync1Manager();
+    _taisync2Manager         = toolbox->taisync2Manager();
 #endif
 #if defined(QGC_GST_MICROHARD_ENABLED)
     _microhardManager       = toolbox->microhardManager();

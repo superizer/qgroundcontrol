@@ -62,7 +62,8 @@ public:
     Q_PROPERTY(MultiVehicleManager* multiVehicleManager     READ    multiVehicleManager     CONSTANT)
     Q_PROPERTY(QGCMapEngineManager* mapEngineManager        READ    mapEngineManager        CONSTANT)
     Q_PROPERTY(QGCPositionManager*  qgcPositionManger       READ    qgcPositionManger       CONSTANT)
-    Q_PROPERTY(VideoManager*        videoManager            READ    videoManager            CONSTANT)
+    Q_PROPERTY(VideoManager*        video1Manager           READ    video1Manager           CONSTANT)
+    Q_PROPERTY(VideoManager*        video2Manager           READ    video2Manager           CONSTANT)
     Q_PROPERTY(MAVLinkLogManager*   mavlinkLogManager       READ    mavlinkLogManager       CONSTANT)
     Q_PROPERTY(SettingsManager*     settingsManager         READ    settingsManager         CONSTANT)
     Q_PROPERTY(AirspaceManager*     airspaceManager         READ    airspaceManager         CONSTANT)
@@ -71,7 +72,8 @@ public:
     Q_PROPERTY(MissionCommandTree*  missionCommandTree      READ    missionCommandTree      CONSTANT)
     Q_PROPERTY(FactGroup*           gpsRtk                  READ    gpsRtkFactGroup         CONSTANT)
     Q_PROPERTY(bool                 airmapSupported         READ    airmapSupported         CONSTANT)
-    Q_PROPERTY(TaisyncManager*      taisyncManager          READ    taisyncManager          CONSTANT)
+    Q_PROPERTY(TaisyncManager*      taisync1Manager         READ    taisync1Manager         CONSTANT)
+    Q_PROPERTY(TaisyncManager*      taisync2Manager         READ    taisync2Manager         CONSTANT)
     Q_PROPERTY(bool                 taisyncSupported        READ    taisyncSupported        CONSTANT)
     Q_PROPERTY(MicrohardManager*    microhardManager        READ    microhardManager        CONSTANT)
     Q_PROPERTY(bool                 microhardSupported      READ    microhardSupported      CONSTANT)
@@ -153,7 +155,8 @@ public:
     QGCMapEngineManager*    mapEngineManager    ()  { return _mapEngineManager; }
     QGCPositionManager*     qgcPositionManger   ()  { return _qgcPositionManager; }
     MissionCommandTree*     missionCommandTree  ()  { return _missionCommandTree; }
-    VideoManager*           videoManager        ()  { return _videoManager; }
+    VideoManager*           video1Manager       ()  { return _video1Manager; }
+    VideoManager*           video2Manager       ()  { return _video2Manager; }
     MAVLinkLogManager*      mavlinkLogManager   ()  { return _mavlinkLogManager; }
     QGCCorePlugin*          corePlugin          ()  { return _corePlugin; }
     SettingsManager*        settingsManager     ()  { return _settingsManager; }
@@ -170,7 +173,8 @@ public:
     static QGeoCoordinate   flightMapPosition   ()  { return _coord; }
     static double           flightMapZoom       ()  { return _zoom; }
 
-    TaisyncManager*         taisyncManager      ()  { return _taisyncManager; }
+    TaisyncManager*         taisync1Manager     ()  { return _taisync1Manager; }
+    TaisyncManager*         taisync2Manager     ()  { return _taisync2Manager; }
 #if defined(QGC_GST_TAISYNC_ENABLED)
     bool                    taisyncSupported    ()  { return true; }
 #else
@@ -248,14 +252,16 @@ private:
     QGCMapEngineManager*    _mapEngineManager       = nullptr;
     QGCPositionManager*     _qgcPositionManager     = nullptr;
     MissionCommandTree*     _missionCommandTree     = nullptr;
-    VideoManager*           _videoManager           = nullptr;
+    VideoManager*           _video1Manager          = nullptr;
+    VideoManager*           _video2Manager          = nullptr;
     MAVLinkLogManager*      _mavlinkLogManager      = nullptr;
     QGCCorePlugin*          _corePlugin             = nullptr;
     FirmwarePluginManager*  _firmwarePluginManager  = nullptr;
     SettingsManager*        _settingsManager        = nullptr;
     FactGroup*              _gpsRtkFactGroup        = nullptr;
     AirspaceManager*        _airspaceManager        = nullptr;
-    TaisyncManager*         _taisyncManager         = nullptr;
+    TaisyncManager*         _taisync1Manager        = nullptr;
+    TaisyncManager*         _taisync2Manager        = nullptr;
     MicrohardManager*       _microhardManager       = nullptr;
     ADSBVehicleManager*     _adsbVehicleManager     = nullptr;
     QGCPalette*             _globalPalette          = nullptr;

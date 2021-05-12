@@ -63,8 +63,8 @@ public:
     UASMessageHandler*          uasMessageHandler       () { return _uasMessageHandler; }
     FollowMe*                   followMe                () { return _followMe; }
     QGCPositionManager*         qgcPositionManager      () { return _qgcPositionManager; }
-    VideoManager*               videoManager1           () { return _videoManager1; }
-    VideoManager*               videoManager2           () { return _videoManager2; }
+    VideoManager*               video1Manager           () { return _video1Manager; }
+    VideoManager*               video2Manager           () { return _video2Manager; }
     MAVLinkLogManager*          mavlinkLogManager       () { return _mavlinkLogManager; }
     QGCCorePlugin*              corePlugin              () { return _corePlugin; }
     SettingsManager*            settingsManager         () { return _settingsManager; }
@@ -77,7 +77,8 @@ public:
     GPSManager*                 gpsManager              () { return _gpsManager; }
 #endif
 #if defined(QGC_GST_TAISYNC_ENABLED)
-    TaisyncManager*             taisyncManager          () { return _taisyncManager; }
+    TaisyncManager*             taisync1Manager         () { return _taisync1Manager; }
+    TaisyncManager*             taisync2Manager         () { return _taisync2Manager; }
 #endif
 #if defined(QGC_GST_MICROHARD_ENABLED)
     MicrohardManager*           microhardManager        () { return _microhardManager; }
@@ -104,8 +105,8 @@ private:
     UASMessageHandler*          _uasMessageHandler      = nullptr;
     FollowMe*                   _followMe               = nullptr;
     QGCPositionManager*         _qgcPositionManager     = nullptr;
-    VideoManager*               _videoManager1          = nullptr;
-    VideoManager*               _videoManager2          = nullptr;
+    VideoManager*               _video1Manager          = nullptr;
+    VideoManager*               _video2Manager          = nullptr;
     MAVLinkLogManager*          _mavlinkLogManager      = nullptr;
     QGCCorePlugin*              _corePlugin             = nullptr;
     SettingsManager*            _settingsManager        = nullptr;
@@ -115,7 +116,8 @@ private:
     PairingManager*             _pairingManager         = nullptr;
 #endif
 #if defined(QGC_GST_TAISYNC_ENABLED)
-    TaisyncManager*             _taisyncManager         = nullptr;
+    TaisyncManager*             _taisync1Manager        = nullptr;
+    TaisyncManager*             _taisync2Manager        = nullptr;
 #endif
 #if defined(QGC_GST_MICROHARD_ENABLED)
     MicrohardManager*           _microhardManager       = nullptr;

@@ -87,7 +87,7 @@ DECLARE_SETTINGGROUP(Video2, "Video2")
     _setDefaults();
 }
 
-void VideoSettings2::_setDefaults()
+void Video2Settings::_setDefaults()
 {
     if (_noVideo) {
         _nameToMetaDataMap[videoSourceName]->setRawDefaultValue(videoSourceNoVideo);
@@ -174,13 +174,13 @@ DECLARE_SETTINGSFACT_NO_FUNC(Video2Settings, tcpUrl)
     return _tcpUrlFact;
 }
 
-bool VideoSettings2::streamConfigured(void)
+bool Video2Settings::streamConfigured(void)
 {
 #if !defined(QGC_GST_STREAMING)
     return false;
 #endif
     //-- First, check if it's autoconfigured
-    if(qgcApp()->toolbox()->videoManager2()->autoStreamConfigured()) {
+    if(qgcApp()->toolbox()->video2Manager()->autoStreamConfigured()) {
         qCDebug(VideoManagerLog) << "Stream auto configured";
         return true;
     }
@@ -212,7 +212,7 @@ bool VideoSettings2::streamConfigured(void)
     return false;
 }
 
-void VideoSettings2::_configChanged(QVariant)
+void Video2Settings::_configChanged(QVariant)
 {
     emit streamConfiguredChanged(streamConfigured());
 }

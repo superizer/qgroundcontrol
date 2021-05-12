@@ -242,7 +242,8 @@ ApplicationWindow {
         // So we have to do it ourselves otherwise the signal flows through on app shutdown to an object which no longer exists.
         firstRunPromptManager.clearNextPromptSignal()
         QGroundControl.linkManager.shutdown()
-        QGroundControl.videoManager.stopVideo();
+        QGroundControl.video1Manager.stopVideo();
+        QGroundControl.video2Manager.stopVideo();
         mainWindow.close()
     }
 
@@ -322,7 +323,7 @@ ApplicationWindow {
     header: MainToolBar {
         id:         toolbar
         height:     ScreenTools.toolbarHeight
-        visible:    !QGroundControl.videoManager.fullScreen
+        visible:    !(QGroundControl.video1Manager.fullScreen || QGroundControl.video2Manager.fullScreen)
     }
 
     footer: LogReplayStatusBar {
@@ -567,7 +568,7 @@ ApplicationWindow {
 
     function showCriticalVehicleMessage(message) {
         indicatorPopup.close()
-        if (criticalVehicleMessagePopup.visible || QGroundControl.videoManager.fullScreen) {
+        if (criticalVehicleMessagePopup.visible || QGroundControl.video1Manager.fullScreen || QGroundControl.video2Manager.fullScreen) {
             _vehicleMessageQueue.push(message)
         } else {
             _vehicleMessage = message
