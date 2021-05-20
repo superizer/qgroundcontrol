@@ -919,7 +919,7 @@ VideoManager::_updateSettings(unsigned id)
       else if (source == Video2Settings::videoSourceRTSP)
          settingsChanged |= _updateVideoUri(0, _video2Settings->rtspUrl()->rawValue().toString());
       else if (source == Video2Settings::videoSourceTCP)
-         settingsChanged |= _updateVideoUri(0, QStringLiteral("tcp://%1").arg(_video1Settings->tcpUrl()->rawValue().toString()));
+         settingsChanged |= _updateVideoUri(0, QStringLiteral("tcp://%1").arg(_video2Settings->tcpUrl()->rawValue().toString()));
       else if (source == Video2Settings::videoSource3DRSolo)
          settingsChanged |= _updateVideoUri(0, QStringLiteral("udp://0.0.0.0:5600"));
       else if (source == Video2Settings::videoSourceParrotDiscovery)
@@ -1004,7 +1004,7 @@ VideoManager::_startReceiver(unsigned id)
 #if defined(QGC_GST_STREAMING)
     unsigned timeout;
     
-    if(videoSettingNumber == 2) timeout = _video1Settings->rtspTimeout()->rawValue().toUInt();
+    if(videoSettingNumber == 1) timeout = _video1Settings->rtspTimeout()->rawValue().toUInt();
     else timeout = _video2Settings->rtspTimeout()->rawValue().toUInt();
 
     if (id > 1) {
