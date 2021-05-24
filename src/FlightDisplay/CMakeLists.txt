@@ -5,7 +5,9 @@ add_custom_target(FligthDisplayQml
 		FixedWingChecklist.qml
 		FlightDisplayViewDummy.qml
 		FlightDisplayViewUVC.qml
+      FlightDisplayViewUVC2.qml
 		FlightDisplayViewVideo.qml
+      FlightDisplayViewVideo2.qml
 		FlightDisplayViewWidgets.qml
 		FlyViewAirspaceIndicator.qml
 		FlyViewCustomLayer.qml
@@ -17,6 +19,7 @@ add_custom_target(FligthDisplayQml
 		FlyViewToolStripActionList.qml
 		FlyViewToolStrip.qml
 		FlyViewVideo.qml
+      FlyViewVideo2.qml
 		FlyViewWidgetLayer.qml
 		GuidedActionActionList.qml
 		GuidedActionConfirm.qml

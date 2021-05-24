@@ -70,7 +70,7 @@ Item {
 
     QGCToolInsets {
         id:                     _toolInsets
-        leftEdgeBottomInset:    _pipOverlay.visible ? _pipOverlay.x + _pipOverlay.width : 0
+        leftEdgeBottomInset:    _pipOverlay2.visible ? _pipOverlay2.x + _pipOverlay2.width : 0
         bottomEdgeLeftInset:    _pipOverlay.visible ? parent.height - _pipOverlay.y : 0
     }
 
@@ -148,6 +148,10 @@ Item {
         id: videoControl
     }
 
+    FlyViewVideo2 {
+        id: videoControl2
+    }
+
     QGCPipOverlay {
         id:                     _pipOverlay
         anchors.left:           parent.left
@@ -160,5 +164,19 @@ Item {
         pipZOrder:              _pipItemZorder
         show:                   !QGroundControl.video1Manager.fullScreen &&
                                     (videoControl.pipState.state === videoControl.pipState.pipState || mapControl.pipState.state === mapControl.pipState.pipState)
+    }
+
+    QGCPipOverlay {
+        id:                     _pipOverlay2
+        anchors.left:           _pipOverlay.right
+        anchors.bottom:         parent.bottom
+        anchors.margins:        _toolsMargin
+        item1IsFullSettingsKey: "MainFlyWindowIsMap"
+        item1:                  mapControl
+        item2:                  QGroundControl.video2Manager.hasVideo ? videoControl2 : null
+        fullZOrder:             _fullItemZorder
+        pipZOrder:              _pipItemZorder
+        show:                   !QGroundControl.video2Manager.fullScreen &&
+                                    (videoControl2.pipState.state === videoControl2.pipState.pipState || mapControl.pipState.state === mapControl.pipState.pipState)
     }
 }
