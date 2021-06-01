@@ -1566,8 +1566,6 @@ QGCCameraControl::handleCaptureStatus(const mavlink_camera_capture_status_t& cap
             photoPath += + "/" + QDateTime::currentDateTime().toString("yyyy-MM-dd_hh.mm.ss.zzz") + ".jpg";
             qgcApp()->toolbox()->video1Manager()->grabImage(photoPath);
         }
-    }
-    if(photoStatus() == PHOTO_CAPTURE_INTERVAL_IDLE || photoStatus() == PHOTO_CAPTURE_INTERVAL_IN_PROGRESS) {
         //-- Capture local image as well
         if(qgcApp()->toolbox()->video2Manager()) {
             QString photoPath = qgcApp()->toolbox()->settingsManager()->appSettings()->savePath()->rawValue().toString() + QStringLiteral("/Photo");

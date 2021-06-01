@@ -105,7 +105,7 @@ public:
     virtual void        setIsTaisync        (bool t) { _isTaisync = t;  emit isTaisyncChanged(); }
 
     // Override from QGCTool
-    virtual void        setToolbox          (QGCToolbox *toolbox);
+   //  virtual void        setToolbox          (QGCToolbox *toolbox, int _videoSettingNumber);
     void                setToolboxMod       (QGCToolbox *toolbox, int _videoSettingNumber);
 
 

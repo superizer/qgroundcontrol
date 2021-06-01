@@ -44,7 +44,7 @@ Item {
         color:          Qt.rgba(0,0,0,0.75)
         visible:        !(QGroundControl.video2Manager.decoding)
         QGCLabel {
-            text:               QGroundControl.settingsManager.video2Settings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO") : qsTr("VIDEO DISABLED")
+            text:               QGroundControl.settingsManager.video2Settings.streamEnabled.rawValue ? qsTr("WAITING FOR VIDEO 2") : qsTr("VIDEO 2 DISABLED")
             font.family:        ScreenTools.demiboldFontFamily
             color:              "white"
             font.pointSize:     useSmallFont ? ScreenTools.smallFontPointSize : ScreenTools.largeFontPointSize
@@ -75,13 +75,13 @@ Item {
             id: videoBackgroundComponent
             QGCVideoBackground {
                 id:             videoContent
-                objectName:     "videoContent"
+                objectName:     "video2Content"
 
                 Connections {
                     target: QGroundControl.video2Manager
                     onImageFileChanged: {
                         videoContent.grabToImage(function(result) {
-                            if (!result.saveToFile(QGroundControl.vide1Manager.imageFile)) {
+                            if (!result.saveToFile(QGroundControl.video2Manager.imageFile)) {
                                 console.error('Error capturing video frame');
                             }
                         });
@@ -164,7 +164,7 @@ Item {
             }
             QGCVideoBackground {
                 id:             thermalVideo
-                objectName:     "thermalVideo"
+                objectName:     "thermal2Video"
                 anchors.fill:   parent
                 receiver:       QGroundControl.video2Manager.thermalVideoReceiver
                 opacity:        _camera ? (_camera.thermalMode === QGCCameraControl.THERMAL_BLEND ? _camera.thermalOpacity / 100 : 1.0) : 0

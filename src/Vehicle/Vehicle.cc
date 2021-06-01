@@ -39,6 +39,7 @@
 #include "VideoReceiver.h"
 #include "VideoManager.h"
 #include "Video1Settings.h"
+#include "Video2Settings.h"
 #include "PositionManager.h"
 #include "VehicleObjectAvoidance.h"
 #include "TrajectoryPoints.h"
@@ -181,9 +182,13 @@ Vehicle::Vehicle(LinkInterface*             link,
     _vehicleLinkManager->_addLink(link);
 
     // Set video stream to udp if running ArduSub and Video is disabled
-    if (sub() && _settingsManager->video2Settings()->videoSource()->rawValue() == Video1Settings::videoDisabled) {
+    if (sub() && _settingsManager->video1Settings()->videoSource()->rawValue() == Video1Settings::videoDisabled) {
         _settingsManager->video1Settings()->videoSource()->setRawValue(Video1Settings::videoSourceUDPH264);
         _settingsManager->video1Settings()->lowLatencyMode()->setRawValue(true);
+    }
+    if (sub() && _settingsManager->video2Settings()->videoSource()->rawValue() == Video2Settings::videoDisabled) {
+        _settingsManager->video2Settings()->videoSource()->setRawValue(Video2Settings::videoSourceUDPH264);
+        _settingsManager->video2Settings()->lowLatencyMode()->setRawValue(true);
     }
 
     //-- Airspace Management
@@ -428,6 +433,10 @@ void Vehicle::_commonInit()
     if (sub() && _settingsManager->video1Settings()->videoSource()->rawValue() == Video1Settings::videoDisabled) {
         _settingsManager->video1Settings()->videoSource()->setRawValue(Video1Settings::videoSourceUDPH264);
         _settingsManager->video1Settings()->lowLatencyMode()->setRawValue(true);
+    }
+    if (sub() && _settingsManager->video2Settings()->videoSource()->rawValue() == Video2Settings::videoDisabled) {
+        _settingsManager->video2Settings()->videoSource()->setRawValue(Video2Settings::videoSourceUDPH264);
+        _settingsManager->video2Settings()->lowLatencyMode()->setRawValue(true);
     }
 
     //-- Airspace Management
@@ -1425,6 +1434,12 @@ void Vehicle::_updateArmed(bool armed)
                 if(_settingsManager->video1Settings()->disableWhenDisarmed()->rawValue().toBool()) {
                     _settingsManager->video1Settings()->streamEnabled()->setRawValue(false);
                     qgcApp()->toolbox()->video1Manager()->videoReceiver()->stop();
+                }
+            }
+            if(qgcApp()->toolbox()->video2Manager()->videoReceiver()) {
+                if(_settingsManager->video2Settings()->disableWhenDisarmed()->rawValue().toBool()) {
+                    _settingsManager->video2Settings()->streamEnabled()->setRawValue(false);
+                    qgcApp()->toolbox()->video2Manager()->videoReceiver()->stop();
                 }
             }
         }

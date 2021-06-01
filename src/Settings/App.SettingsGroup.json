@@ -242,18 +242,32 @@
     "qgcRebootRequired":    true
 },
 {
-    "name":             "enableTaisync",
-    "shortDesc": "Enable Taisync Module Support",
-    "longDesc":  "Enable Taisync Module Support",
+    "name":             "enableTaisync1",
+    "shortDesc": "Enable Taisync1 Module Support",
+    "longDesc":  "Enable Taisync1 Module Support",
     "type":             "bool",
     "default":     false
 },
 {
-    "name":             "enableTaisyncVideo",
-    "shortDesc": "Enable Taisync Video Support",
-    "longDesc":  "Enable Taisync Video Support",
+    "name":             "enableTaisyncVideo1",
+    "shortDesc": "Enable Taisync1 Video Support",
+    "longDesc":  "Enable Taisync1 Video Support",
     "type":             "bool",
     "default":     true
+},
+{
+   "name":             "enableTaisync2",
+   "shortDesc": "Enable Taisync2 Module Support",
+   "longDesc":  "Enable Taisync2 Module Support",
+   "type":             "bool",
+   "default":     false
+},
+{
+   "name":             "enableTaisyncVideo2",
+   "shortDesc": "Enable Taisync2 Video Support",
+   "longDesc":  "Enable Taisync2 Video Support",
+   "type":             "bool",
+   "default":     true
 },
 {
     "name":             "enableMicrohard",

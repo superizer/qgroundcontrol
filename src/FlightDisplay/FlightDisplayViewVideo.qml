@@ -75,13 +75,13 @@ Item {
             id: videoBackgroundComponent
             QGCVideoBackground {
                 id:             videoContent
-                objectName:     "videoContent"
+                objectName:     "video1Content"
 
                 Connections {
                     target: QGroundControl.video1Manager
                     onImageFileChanged: {
                         videoContent.grabToImage(function(result) {
-                            if (!result.saveToFile(QGroundControl.vide1Manager.imageFile)) {
+                            if (!result.saveToFile(QGroundControl.video1Manager.imageFile)) {
                                 console.error('Error capturing video frame');
                             }
                         });
@@ -164,7 +164,7 @@ Item {
             }
             QGCVideoBackground {
                 id:             thermalVideo
-                objectName:     "thermalVideo"
+                objectName:     "thermal1Video"
                 anchors.fill:   parent
                 receiver:       QGroundControl.video1Manager.thermalVideoReceiver
                 opacity:        _camera ? (_camera.thermalMode === QGCCameraControl.THERMAL_BLEND ? _camera.thermalOpacity / 100 : 1.0) : 0

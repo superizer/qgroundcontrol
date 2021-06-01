@@ -49,7 +49,7 @@ Item {
     }
 
     //-- Video Streaming
-    FlightDisplayViewVideo {
+    FlightDisplayViewVideo2 {
         id:             videoStreaming
         anchors.fill:   parent
         useSmallFont:   _root.pipState.state !== _root.pipState.fullState
@@ -60,7 +60,7 @@ Item {
         id:             cameraLoader
         anchors.fill:   parent
         visible:        !QGroundControl.video2Manager.isGStreamer
-        source:         visible ? (QGroundControl.video2Manager.uvcEnabled ? "qrc:/qml/FlightDisplayViewUVC.qml" : "qrc:/qml/FlightDisplayViewDummy.qml") : ""
+        source:         visible ? (QGroundControl.video2Manager.uvcEnabled ? "qrc:/qml/FlightDisplayViewUVC2.qml" : "qrc:/qml/FlightDisplayViewDummy.qml") : ""
     }
 
     MouseArea {

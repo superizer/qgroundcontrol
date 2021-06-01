@@ -85,7 +85,7 @@ VideoManager::~VideoManager()
 }
 
 //-----------------------------------------------------------------------------
-
+/*
 void
 VideoManager::setToolbox(QGCToolbox *toolbox)
 {
@@ -108,7 +108,11 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
 
 #if defined(QGC_GST_STREAMING)
-    GStreamer::blacklist(static_cast<Video1Settings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
+    if(videoSettingNumber == 1){
+      GStreamer::blacklist(static_cast<Video1Settings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
+    }else{
+      GStreamer::blacklist(static_cast<Video2Settings::VideoDecoderOptions>(_videoSettings->forceVideoDecoder()->rawValue().toInt()));
+    }
 #ifndef QGC_DISABLE_UVC
    // If we are using a UVC camera setup the device name
    _updateUVC();
@@ -209,19 +213,19 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
 
 #endif
 }
-
+*/
 void
 VideoManager::setToolboxMod(QGCToolbox *toolbox, int _videoSettingNumber)
 {
+   videoSettingNumber = _videoSettingNumber;
    QGCTool::setToolbox(toolbox);
+
    QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
    qmlRegisterUncreatableType<VideoManager> ("QGroundControl.VideoManager", 1, 0, "VideoManager", "Reference only");
    qmlRegisterUncreatableType<VideoReceiver>("QGroundControl",              1, 0, "VideoReceiver","Reference only");
 
    // TODO: Those connections should be Per Video, not per VideoManager.
    QString videoSource;
-
-   videoSettingNumber = _videoSettingNumber;
 
    if(videoSettingNumber == 1){
    _video1Settings = toolbox->settingsManager()->video1Settings();
@@ -777,7 +781,13 @@ VideoManager::_initVideo()
         return;
     }
 
-    QQuickItem* widget = root->findChild<QQuickItem*>("videoContent");
+    QQuickItem* widget;
+    
+    if(videoSettingNumber == 1){
+     widget = root->findChild<QQuickItem*>("video1Content");
+    }else{ // 2
+      widget = root->findChild<QQuickItem*>("video2Content");
+    }
 
     if (widget != nullptr && _videoReceiver[0] != nullptr) {
         _videoSink[0] = qgcApp()->toolbox()->corePlugin()->createVideoSink(this, widget);
@@ -792,7 +802,11 @@ VideoManager::_initVideo()
         qCDebug(VideoManagerLog) << "video receiver disabled";
     }
 
-    widget = root->findChild<QQuickItem*>("thermalVideo");
+    if(videoSettingNumber == 1){
+      widget = root->findChild<QQuickItem*>("thermal1Video");
+    }else{ // 2
+      widget = root->findChild<QQuickItem*>("thermal2Video");
+    }
 
     if (widget != nullptr && _videoReceiver[1] != nullptr) {
         _videoSink[1] = qgcApp()->toolbox()->corePlugin()->createVideoSink(this, widget);
